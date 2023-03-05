@@ -1,13 +1,10 @@
-import 'dart:math';
-import 'dart:typed_data';
+import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-import 'classifier/classifier.dart';
-import 'utils/image_utils.dart';
-import 'utils/isolate_utils.dart';
+import 'cropper.dart';
 
 class CameraWidget extends StatefulWidget {
   const CameraWidget({Key? key}) : super(key: key);
@@ -19,9 +16,9 @@ class CameraWidget extends StatefulWidget {
 class CameraWidgetState extends State<CameraWidget> {
   late CameraController _controller;
   Future<void>? _initializeControllerFuture;
-  late final Classifier classifier;
   late Canvas canvas;
-  Uint8List? snippet = null;
+  XFile? image = null;
+  String? ocrResult;
 
   bool isLoading = true;
   bool predicting = false;
@@ -34,7 +31,6 @@ class CameraWidgetState extends State<CameraWidget> {
 
   void initStateAsync() async {
     initializeCameras();
-    classifier = Classifier();
   }
 
   @override
@@ -42,15 +38,6 @@ class CameraWidgetState extends State<CameraWidget> {
     return FutureBuilder<void>(
       future: _initializeControllerFuture,
       builder: (context, snapshot) {
-        if (snippet != null)
-          return Column(children: [
-            Transform.rotate(
-                angle: pi / 2,
-                child: Image(
-                  image: MemoryImage(snippet!),
-                )),
-            ElevatedButton(onPressed: onBack, child: Text('Back'))
-          ]);
         return isLoading
             ? Center(
                 child: CircularProgressIndicator(),
@@ -58,6 +45,7 @@ class CameraWidgetState extends State<CameraWidget> {
             : Column(
                 children: [
                   CameraPreview(_controller),
+                  if (ocrResult != null) Text(ocrResult!),
                   ElevatedButton(
                       onPressed: onTakeImage, child: Text('Take picture')),
                 ],
@@ -69,7 +57,7 @@ class CameraWidgetState extends State<CameraWidget> {
   void initializeCameras() async {
     final cameras = await availableCameras();
     if (cameras.length > 0) {
-      _controller = CameraController(cameras[0], ResolutionPreset.high);
+      _controller = CameraController(cameras[0], ResolutionPreset.low);
       _initializeControllerFuture = _controller.initialize();
 
       setState(() {
@@ -103,35 +91,25 @@ class CameraWidgetState extends State<CameraWidget> {
 
   void onTakeImage() async {
     final xFile = await _controller.takePicture();
-    final image = await ImageUtils.convertXFiletoImage(xFile);
-    if (predicting) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+          builder: (context) =>
+              CropperScreen(image: Image.file(File(this.image!.path)))),
+    );
 
     setState(() {
-      predicting = true;
-    });
-
-    final worker = PredictionWorker();
-    worker
-        .init(PredictionEvent(
-            image, classifier.labels, classifier.interpreter.address))
-        .then(
-          (result) => {
-            setState(() {
-              predicting = false;
-            })
-          },
-        );
-    worker.predictionStream.listen((result) {
-      setState(() {
-        snippet = result as Uint8List;
-        print('Snippet found');
-      });
+      image = xFile;
     });
   }
 
-  void stopImageStream() {
-    _controller.stopImageStream();
-    predicting = false;
+  dynamic onLatestImageAvailable(CameraImage cameraImage) async {
+    if (ocrResult != null) {
+      print('TEXT: $ocrResult');
+    }
+    setState(() {
+      // ocrResult = text;
+    });
   }
 
   @override
@@ -142,7 +120,28 @@ class CameraWidgetState extends State<CameraWidget> {
 
   void onBack() {
     setState(() {
-      snippet = null;
+      image = null;
     });
+  }
+}
+
+class SecondRoute extends StatelessWidget {
+  const SecondRoute({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Second Route'),
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            // Navigate back to first route when tapped.
+          },
+          child: const Text('Go back!'),
+        ),
+      ),
+    );
   }
 }
