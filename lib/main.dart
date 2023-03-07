@@ -4,7 +4,9 @@ import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'camera.dart';
+import 'ui/appbar.dart';
+import 'ui/bottombar.dart';
+import 'utils/styles_utils.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -48,15 +50,67 @@ class MyHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
     var pair = appState.current;
+    final appBarHome = AppBarWidget(screenName: AppBarTypes.HOME);
 
     return Scaffold(
-      body: Column(
-        children: [
-          Flexible(
-            child: CameraWidget(),
+      backgroundColor: Color(0xff4A6488),
+      bottomNavigationBar: Container(child: BottomBarWidget()),
+      appBar: PreferredSize(
+          preferredSize: appBarHome.preferredSize, child: appBarHome),
+      body: Column(children: [
+        Flexible(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(22.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Ihre Zählernummer: ',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontFamily: 'Avenir')),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Text(
+                      'Use parameter for widget here',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontFamily: 'Avenir'),
+                    ),
+                    SizedBox(
+                      height: 24,
+                    ),
+                    Text(
+                      'Letzte Ablesungen:',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontFamily: 'Avenir'),
+                    ),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: Text(
+                        '- 16/02/2023 - 1483 kWh',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontFamily: 'Avenir'),
+                      ),
+                    )
+                  ],
+                ),
+              )
+            ],
           ),
-        ],
-      ),
+        )
+      ]),
     );
   }
 

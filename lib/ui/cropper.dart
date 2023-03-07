@@ -4,6 +4,7 @@ import 'package:cropperx/cropperx.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tesseract_ocr/android_ios.dart';
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image/image.dart' as imgLib;
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -25,6 +26,7 @@ class _CropperScreenState extends State<CropperScreen> {
     _imageToCrop = widget.image;
   }
 
+  final recognizer = TextRecognizer(script: TextRecognitionScript.latin);
   final ImagePicker _picker = ImagePicker();
   final GlobalKey _cropperKey = GlobalKey(debugLabel: 'cropperKey');
   Image? _imageToCrop;
@@ -101,7 +103,7 @@ class _CropperScreenState extends State<CropperScreen> {
     image = imgLib.grayscale(image);
     image = imgLib.luminanceThreshold(image);
     image = imgLib.gaussianBlur(image, radius: 3);
-    imgLib.sobel(image);
+    // imgLib.sobel(image);
     setState(() {
       _croppedImage = imgLib.encodeBmp(image);
     });
@@ -125,11 +127,23 @@ class _CropperScreenState extends State<CropperScreen> {
       'tessedit_char_whitelist': '0123456789',
       'preserve_interword_spaces': '0'
     };
+//     final inputImageSize =
+//         Size(tempImage.width.toDouble(), tempImage.height.toDouble());
 
-    final ocrResult = await FlutterTesseractOcr.extractText(tempImgPath,
-        language: 'eng', args: args);
+// //TODO: Maybe rotation???
+//     final inputImage = InputImage.fromBytes(
+//         bytes: imageBytes,
+//         inputImageData: InputImageData(
+//             planeData: null,
+//             size: inputImageSize,
+//             imageRotation: InputImageRotation.rotation0deg,
+//             inputImageFormat: InputImageFormat.yuv420));
+
+//     final recognized = await recognizer.processImage(inputImage);
+//     InputImageFormatValue.fromRawValue();
+    final ocrResult =
+        await FlutterTesseractOcr.extractText(tempImgPath, args: args);
     print('OCR RESULT: $ocrResult');
-    await tempFile.delete();
     setState(() {
       this.ocrResult = ocrResult;
     });

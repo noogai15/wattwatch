@@ -36,6 +36,17 @@ class SendFormDialogue extends StatelessWidget {
                     border: OutlineInputBorder(), labelText: 'PLZ'),
               ),
             ),
+            // Padding(
+            //   padding: EdgeInsets.all(15.0),
+            //   child: TextField(
+            //     readOnly: true,
+            //     keyboardType: TextInputType.number,
+            //     controller: TextEditingController(text: getToday()),
+            //     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            //     decoration: InputDecoration(
+            //         border: OutlineInputBorder(), labelText: 'Datum'),
+            //   ),
+            // ),
             Padding(
               padding: EdgeInsets.only(top: 50.0),
               child: ElevatedButton(
@@ -48,6 +59,12 @@ class SendFormDialogue extends StatelessWidget {
       ),
     );
   }
+
+  // String getToday() {
+  //   DateTime now = new DateTime.now();
+  //   DateTime date = new DateTime(now.year, now.month, now.day);
+  //   return date.toString();
+  // }
 
   void onSubmit() {
     //TODO
