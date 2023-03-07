@@ -4,6 +4,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../utils/geo_utils.dart';
 import 'cropper.dart';
 
 class CameraWidget extends StatefulWidget {
@@ -55,6 +56,8 @@ class CameraWidgetState extends State<CameraWidget> {
   }
 
   void initializeCameras() async {
+    final userLocation = await getUserLocation();
+
     final cameras = await availableCameras();
     if (cameras.length > 0) {
       _controller = CameraController(cameras[0], ResolutionPreset.low);

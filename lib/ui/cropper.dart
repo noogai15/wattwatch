@@ -4,7 +4,6 @@ import 'package:cropperx/cropperx.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tesseract_ocr/android_ios.dart';
-import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image/image.dart' as imgLib;
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -26,7 +25,6 @@ class _CropperScreenState extends State<CropperScreen> {
     _imageToCrop = widget.image;
   }
 
-  final recognizer = TextRecognizer(script: TextRecognitionScript.latin);
   final ImagePicker _picker = ImagePicker();
   final GlobalKey _cropperKey = GlobalKey(debugLabel: 'cropperKey');
   Image? _imageToCrop;

@@ -3,14 +3,18 @@ import 'dart:ui';
 import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'ui/appbar.dart';
 import 'ui/bottombar.dart';
+import 'utils/geo_utils.dart';
 import 'utils/styles_utils.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   DartPluginRegistrant.ensureInitialized();
+  savePostalCode();
+  saveStreet();
   runApp(MyApp());
 }
 
@@ -113,6 +117,16 @@ class MyHomePage extends StatelessWidget {
       ]),
     );
   }
+}
 
-  void onPressed() async {}
+void savePostalCode() async {
+  final prefs = await SharedPreferences.getInstance();
+  final postalCode = await getPostalCode();
+  prefs.setString('postalCode', postalCode);
+}
+
+void saveStreet() async {
+  final prefs = await SharedPreferences.getInstance();
+  final street = await getStreet();
+  prefs.setString('street', street);
 }
