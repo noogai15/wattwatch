@@ -2,7 +2,6 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-import '../utils/geo_utils.dart';
 import 'cropper.dart';
 
 class CameraWidget extends StatefulWidget {
@@ -21,6 +20,7 @@ class CameraWidgetState extends State<CameraWidget> {
 
   bool isLoading = true;
   bool predicting = false;
+  bool flashOn = true;
 
   @override
   void initState() {
@@ -29,7 +29,12 @@ class CameraWidgetState extends State<CameraWidget> {
   }
 
   void initStateAsync() async {
-    initializeCameras();
+    initCameraController();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
   }
 
   @override
@@ -47,19 +52,23 @@ class CameraWidgetState extends State<CameraWidget> {
                   if (ocrResult != null) Text(ocrResult!),
                   ElevatedButton(
                       onPressed: onTakeImage, child: Text('Take picture')),
+                  ElevatedButton(
+                      onPressed: toggleFlash,
+                      child: flashOn == true
+                          ? Icon(Icons.flash_off)
+                          : Icon(Icons.flash_on))
                 ],
               );
       },
     );
   }
 
-  void initializeCameras() async {
-    final userLocation = await getUserLocation();
-
+  void initCameraController() async {
     final cameras = await availableCameras();
     if (cameras.length > 0) {
       _controller = CameraController(cameras[0], ResolutionPreset.low);
       _initializeControllerFuture = _controller.initialize();
+      _controller.setFlashMode(FlashMode.torch);
 
       setState(() {
         isLoading = false;
@@ -67,7 +76,7 @@ class CameraWidgetState extends State<CameraWidget> {
     } else {
       final isGranted = await Permission.camera.request().isGranted;
       if (isGranted) {
-        initializeCameras();
+        initCameraController();
       } else {
         await showDialog<void>(
           context: context,
@@ -96,20 +105,12 @@ class CameraWidgetState extends State<CameraWidget> {
       image = xFile;
     });
     final imageBytes = await image!.readAsBytes();
+    _controller.setFlashMode(FlashMode.off);
     Navigator.push(
       context,
       MaterialPageRoute<void>(
           builder: (context) => CropperScreen(imageBytes: imageBytes)),
     );
-  }
-
-  dynamic onLatestImageAvailable(CameraImage cameraImage) async {
-    if (ocrResult != null) {
-      print('TEXT: $ocrResult');
-    }
-    setState(() {
-      // ocrResult = text;
-    });
   }
 
   @override
@@ -123,25 +124,16 @@ class CameraWidgetState extends State<CameraWidget> {
       image = null;
     });
   }
-}
 
-class SecondRoute extends StatelessWidget {
-  const SecondRoute({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Second Route'),
-      ),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            // Navigate back to first route when tapped.
-          },
-          child: const Text('Go back!'),
-        ),
-      ),
-    );
+  void toggleFlash() {
+    setState(() {
+      if (flashOn) {
+        flashOn = false;
+        _controller.setFlashMode(FlashMode.off);
+      } else {
+        flashOn = true;
+        _controller.setFlashMode(FlashMode.torch);
+      }
+    });
   }
 }
