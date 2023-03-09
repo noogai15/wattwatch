@@ -29,7 +29,6 @@ class _CropperScreenState extends State<CropperScreen> {
   final GlobalKey _cropperKey = GlobalKey(debugLabel: 'cropperKey');
   Image? _imageToCrop;
   Uint8List? _croppedImage;
-  Uint8List? laplaceBytes;
   String? ocrResult = null;
   OverlayType _overlayType = OverlayType.rectangle;
   int _rotationTurns = 0;
@@ -72,6 +71,8 @@ class _CropperScreenState extends State<CropperScreen> {
                       }
                     },
                   ),
+                  ElevatedButton(
+                      onPressed: onImagePicker, child: Text('Pick Image')),
                   if (_croppedImage != null)
                     ElevatedButton(
                       onPressed: onConfirm,
@@ -100,8 +101,8 @@ class _CropperScreenState extends State<CropperScreen> {
   Uint8List preprocessImg(imgLib.Image image) {
     image = imgLib.grayscale(image);
     image = imgLib.luminanceThreshold(image);
-    image = imgLib.gaussianBlur(image, radius: 3);
-    // imgLib.sobel(image);
+    image = imgLib.gaussianBlur(image, radius: 1);
+    imgLib.sobel(image, amount: 10);
     setState(() {
       _croppedImage = imgLib.encodeBmp(image);
     });
@@ -128,7 +129,6 @@ class _CropperScreenState extends State<CropperScreen> {
 //     final inputImageSize =
 //         Size(tempImage.width.toDouble(), tempImage.height.toDouble());
 
-// //TODO: Maybe rotation???
 //     final inputImage = InputImage.fromBytes(
 //         bytes: imageBytes,
 //         inputImageData: InputImageData(
@@ -155,5 +155,13 @@ class _CropperScreenState extends State<CropperScreen> {
         builder: (BuildContext context) {
           return SendFormDialogue(scanResult);
         });
+  }
+
+  void onImagePicker() async {
+    final pickedImg = await _picker.pickImage(source: ImageSource.gallery);
+    final bytes = await pickedImg!.readAsBytes();
+    setState(() {
+      _croppedImage = bytes;
+    });
   }
 }

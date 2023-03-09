@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../utils/counter_utils.dart';
+
 class SendFormDialogue extends StatefulWidget {
   String counterNum = '';
   SendFormDialogue(this.counterNum);
@@ -12,14 +14,14 @@ class SendFormDialogue extends StatefulWidget {
 
 class SendFormDialogueState extends State<SendFormDialogue> {
   final TextEditingController _postalCodeController = TextEditingController();
-
-  String counterNum = '';
-  SendFormDialogueState(this.counterNum);
+  String counter = '';
+  var formattedCounter;
+  SendFormDialogueState(this.counter);
 
   @override
   void initState() {
     super.initState();
-
+    formattedCounter = formatCounter(counter);
     initStateAsync();
   }
 
@@ -43,38 +45,18 @@ class SendFormDialogueState extends State<SendFormDialogue> {
               padding: EdgeInsets.all(15.0),
               child: TextField(
                 keyboardType: TextInputType.number,
-                controller: TextEditingController(text: counterNum),
+                controller:
+                    TextEditingController(text: formattedCounter.toString()),
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 decoration: InputDecoration(
                     border: OutlineInputBorder(), labelText: 'Zahlerstand'),
               ),
             ),
             Padding(
-              padding: EdgeInsets.all(15.0),
-              child: TextField(
-                keyboardType: TextInputType.number,
-                controller: _postalCodeController,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                decoration: InputDecoration(
-                    border: OutlineInputBorder(), labelText: 'PLZ'),
-              ),
-            ),
-            // Padding(
-            //   padding: EdgeInsets.all(15.0),
-            //   child: TextField(
-            //     readOnly: true,
-            //     keyboardType: TextInputType.number,
-            //     controller: TextEditingController(text: getToday()),
-            //     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            //     decoration: InputDecoration(
-            //         border: OutlineInputBorder(), labelText: 'Datum'),
-            //   ),
-            // ),
-            Padding(
               padding: EdgeInsets.only(top: 50.0),
               child: ElevatedButton(
                 onPressed: onSubmit,
-                child: Text('Abschicken'),
+                child: Text('Speichern & Abschicken'),
               ),
             ),
           ],
@@ -84,12 +66,4 @@ class SendFormDialogueState extends State<SendFormDialogue> {
   }
 }
 
-// String getToday() {
-//   DateTime now = new DateTime.now();
-//   DateTime date = new DateTime(now.year, now.month, now.day);
-//   return date.toString();
-// }
-
-void onSubmit() {
-  //TODO
-}
+void onSubmit() {}
