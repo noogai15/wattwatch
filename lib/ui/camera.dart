@@ -46,17 +46,33 @@ class CameraWidgetState extends State<CameraWidget> {
             ? Center(
                 child: CircularProgressIndicator(),
               )
-            : Column(
+            : Wrap(
+                alignment: WrapAlignment.center,
                 children: [
                   CameraPreview(_controller),
                   if (ocrResult != null) Text(ocrResult!),
                   ElevatedButton(
-                      onPressed: onTakeImage, child: Text('Take picture')),
+                    onPressed: onTakeImage,
+                    child: Text(
+                      'Take picture',
+                      style:
+                          TextStyle(color: Color.fromARGB(255, 70, 122, 196)),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 12,
+                  ),
                   ElevatedButton(
                       onPressed: toggleFlash,
                       child: flashOn == true
-                          ? Icon(Icons.flash_off)
-                          : Icon(Icons.flash_on))
+                          ? Icon(
+                              Icons.flash_off,
+                              color: Color.fromARGB(255, 70, 122, 196),
+                            )
+                          : Icon(
+                              Icons.flash_on,
+                              color: Color.fromARGB(255, 70, 122, 196),
+                            ))
                 ],
               );
       },

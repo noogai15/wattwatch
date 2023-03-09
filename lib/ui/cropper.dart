@@ -47,7 +47,6 @@ class _CropperScreenState extends State<CropperScreen> {
                   child: Crop(
                       image: _imageBytes!,
                       controller: _controller,
-                      aspectRatio: 6,
                       onCropped: (image) {
                         setState(() {
                           _croppedImageBytes = image;

@@ -15,7 +15,7 @@ class SendFormDialogue extends StatefulWidget {
 class SendFormDialogueState extends State<SendFormDialogue> {
   final TextEditingController _postalCodeController = TextEditingController();
   String counter = '';
-  var formattedCounter;
+  int? formattedCounter;
   SendFormDialogueState(this.counter);
 
   @override
@@ -45,8 +45,10 @@ class SendFormDialogueState extends State<SendFormDialogue> {
               padding: EdgeInsets.all(15.0),
               child: TextField(
                 keyboardType: TextInputType.number,
-                controller:
-                    TextEditingController(text: formattedCounter.toString()),
+                controller: TextEditingController(
+                    text: formattedCounter == null
+                        ? ''
+                        : formattedCounter.toString()),
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 decoration: InputDecoration(
                     border: OutlineInputBorder(), labelText: 'Zahlerstand'),
