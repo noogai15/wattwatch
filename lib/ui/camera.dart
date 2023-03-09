@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -94,16 +92,15 @@ class CameraWidgetState extends State<CameraWidget> {
 
   void onTakeImage() async {
     final xFile = await _controller.takePicture();
-    Navigator.push(
-      context,
-      MaterialPageRoute<void>(
-          builder: (context) =>
-              CropperScreen(image: Image.file(File(this.image!.path)))),
-    );
-
     setState(() {
       image = xFile;
     });
+    final imageBytes = await image!.readAsBytes();
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+          builder: (context) => CropperScreen(imageBytes: imageBytes)),
+    );
   }
 
   dynamic onLatestImageAvailable(CameraImage cameraImage) async {

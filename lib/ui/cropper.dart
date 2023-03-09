@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:crop_your_image/crop_your_image.dart';
 import 'package:cropperx/cropperx.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -11,8 +12,8 @@ import 'package:path_provider/path_provider.dart';
 import 'send_form.dart';
 
 class CropperScreen extends StatefulWidget {
-  final Image image;
-  const CropperScreen({Key? key, required this.image}) : super(key: key);
+  final Uint8List imageBytes;
+  const CropperScreen({Key? key, required this.imageBytes}) : super(key: key);
 
   @override
   State<CropperScreen> createState() => _CropperScreenState();
@@ -22,13 +23,14 @@ class _CropperScreenState extends State<CropperScreen> {
   @override
   void initState() {
     super.initState();
-    _imageToCrop = widget.image;
+    _imageBytes = widget.imageBytes;
   }
 
   final ImagePicker _picker = ImagePicker();
   final GlobalKey _cropperKey = GlobalKey(debugLabel: 'cropperKey');
-  Image? _imageToCrop;
-  Uint8List? _croppedImage;
+  Uint8List? _imageBytes;
+  final _controller = CropController();
+  Uint8List? _croppedImageBytes;
   String? ocrResult = null;
   OverlayType _overlayType = OverlayType.rectangle;
   int _rotationTurns = 0;
@@ -41,39 +43,31 @@ class _CropperScreenState extends State<CropperScreen> {
           child: Column(
             children: [
               SizedBox(
-                height: 500,
-                child: _imageToCrop != null
-                    ? Cropper(
-                        cropperKey: _cropperKey,
-                        overlayType: _overlayType,
-                        aspectRatio: 5.2,
-                        rotationTurns: _rotationTurns,
-                        image: _imageToCrop!,
-                      )
-                    : const ColoredBox(color: Colors.grey),
-              ),
+                  height: 500,
+                  child: Crop(
+                      image: _imageBytes!,
+                      controller: _controller,
+                      aspectRatio: 6,
+                      onCropped: (image) {
+                        setState(() {
+                          _croppedImageBytes = image;
+                        });
+                      })),
               const SizedBox(height: 16),
               Wrap(
                 spacing: 16,
                 children: [
                   ElevatedButton(
-                    child: Text(
-                        _croppedImage == null ? 'Crop Image' : 'Re-crop image'),
-                    onPressed: () async {
-                      final imageBytes = await Cropper.crop(
-                        cropperKey: _cropperKey,
-                      );
-
-                      if (imageBytes != null) {
-                        setState(() {
-                          _croppedImage = imageBytes;
-                        });
-                      }
+                    child: Text(_croppedImageBytes == null
+                        ? 'Crop Image'
+                        : 'Re-crop image'),
+                    onPressed: () {
+                      _controller.crop();
                     },
                   ),
                   ElevatedButton(
                       onPressed: onImagePicker, child: Text('Pick Image')),
-                  if (_croppedImage != null)
+                  if (_croppedImageBytes != null)
                     ElevatedButton(
                       onPressed: onConfirm,
                       child: Text('Confirm'),
@@ -82,11 +76,10 @@ class _CropperScreenState extends State<CropperScreen> {
                 ],
               ),
               const SizedBox(height: 16),
-              if (_croppedImage != null)
+              if (_croppedImageBytes != null)
                 Padding(
-                  padding: const EdgeInsets.all(36.0),
-                  child: Image.memory(_croppedImage!),
-                ),
+                    padding: const EdgeInsets.all(36.0),
+                    child: Image.memory(_croppedImageBytes!)),
             ],
           ),
         ),
@@ -104,7 +97,7 @@ class _CropperScreenState extends State<CropperScreen> {
     image = imgLib.gaussianBlur(image, radius: 1);
     imgLib.sobel(image, amount: 10);
     setState(() {
-      _croppedImage = imgLib.encodeBmp(image);
+      _croppedImageBytes = imgLib.encodeBmp(image);
     });
     return imgLib.encodeBmp(image);
   }
@@ -126,19 +119,7 @@ class _CropperScreenState extends State<CropperScreen> {
       'tessedit_char_whitelist': '0123456789',
       'preserve_interword_spaces': '0'
     };
-//     final inputImageSize =
-//         Size(tempImage.width.toDouble(), tempImage.height.toDouble());
 
-//     final inputImage = InputImage.fromBytes(
-//         bytes: imageBytes,
-//         inputImageData: InputImageData(
-//             planeData: null,
-//             size: inputImageSize,
-//             imageRotation: InputImageRotation.rotation0deg,
-//             inputImageFormat: InputImageFormat.yuv420));
-
-//     final recognized = await recognizer.processImage(inputImage);
-//     InputImageFormatValue.fromRawValue();
     final ocrResult =
         await FlutterTesseractOcr.extractText(tempImgPath, args: args);
     print('OCR RESULT: $ocrResult');
@@ -149,7 +130,7 @@ class _CropperScreenState extends State<CropperScreen> {
   }
 
   void onConfirm() async {
-    final scanResult = await ocrScan(_croppedImage!);
+    final scanResult = await ocrScan(_croppedImageBytes!);
     showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -161,7 +142,7 @@ class _CropperScreenState extends State<CropperScreen> {
     final pickedImg = await _picker.pickImage(source: ImageSource.gallery);
     final bytes = await pickedImg!.readAsBytes();
     setState(() {
-      _croppedImage = bytes;
+      _croppedImageBytes = bytes;
     });
   }
 }
