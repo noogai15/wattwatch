@@ -15,10 +15,9 @@ class CameraWidgetState extends State<CameraWidget> {
   late CameraController _controller;
   Future<void>? _initializeControllerFuture;
   late Canvas canvas;
-  XFile? image = null;
-  String? ocrResult;
 
   bool isLoading = true;
+  bool isLoadingCropper = false;
   bool predicting = false;
   bool flashOn = true;
 
@@ -30,6 +29,11 @@ class CameraWidgetState extends State<CameraWidget> {
 
   void initStateAsync() async {
     initCameraController();
+  }
+
+  Future<bool> _onNavBack() async {
+    setState(() {});
+    return true;
   }
 
   @override
@@ -46,34 +50,50 @@ class CameraWidgetState extends State<CameraWidget> {
             ? Center(
                 child: CircularProgressIndicator(),
               )
-            : Wrap(
-                alignment: WrapAlignment.center,
-                children: [
-                  CameraPreview(_controller),
-                  if (ocrResult != null) Text(ocrResult!),
-                  ElevatedButton(
-                    onPressed: onTakeImage,
-                    child: Text(
-                      'Take picture',
-                      style:
-                          TextStyle(color: Color.fromARGB(255, 70, 122, 196)),
-                    ),
-                  ),
-                  SizedBox(
-                    width: 12,
-                  ),
-                  ElevatedButton(
-                      onPressed: toggleFlash,
-                      child: flashOn == true
-                          ? Icon(
-                              Icons.flash_off,
-                              color: Color.fromARGB(255, 70, 122, 196),
-                            )
-                          : Icon(
-                              Icons.flash_on,
-                              color: Color.fromARGB(255, 70, 122, 196),
-                            ))
-                ],
+            : Container(
+                color: Color(0xff252837),
+                child: Column(
+                  children: [
+                    Stack(children: [
+                      CameraPreview(
+                        _controller,
+                      ),
+                      if (isLoadingCropper)
+                        Positioned.fill(
+                          child: Center(
+                              child: Container(
+                            color: Colors.black54,
+                            child: Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                          )),
+                        ),
+                    ]),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton(
+                            onPressed: onTakeImage,
+                            child: Icon(Icons.camera_alt,
+                                color: Color.fromARGB(255, 70, 122, 196))),
+                        SizedBox(
+                          width: 12,
+                        ),
+                        ElevatedButton(
+                            onPressed: toggleFlash,
+                            child: flashOn == true
+                                ? Icon(
+                                    Icons.flash_off,
+                                    color: Color.fromARGB(255, 70, 122, 196),
+                                  )
+                                : Icon(
+                                    Icons.flash_on,
+                                    color: Color.fromARGB(255, 70, 122, 196),
+                                  )),
+                      ],
+                    )
+                  ],
+                ),
               );
       },
     );
@@ -82,7 +102,7 @@ class CameraWidgetState extends State<CameraWidget> {
   void initCameraController() async {
     final cameras = await availableCameras();
     if (cameras.length > 0) {
-      _controller = CameraController(cameras[0], ResolutionPreset.low);
+      _controller = CameraController(cameras[0], ResolutionPreset.high);
       _initializeControllerFuture = _controller.initialize();
       _controller.setFlashMode(FlashMode.torch);
 
@@ -116,17 +136,17 @@ class CameraWidgetState extends State<CameraWidget> {
   }
 
   void onTakeImage() async {
+    toggleLoadingCropper();
     final xFile = await _controller.takePicture();
-    setState(() {
-      image = xFile;
-    });
-    final imageBytes = await image!.readAsBytes();
-    _controller.setFlashMode(FlashMode.off);
-    Navigator.push(
+    turnOffFlash();
+    final imageBytes = await xFile.readAsBytes();
+    toggleLoadingCropper();
+    await Navigator.push(
       context,
       MaterialPageRoute<void>(
           builder: (context) => CropperScreen(imageBytes: imageBytes)),
     );
+    turnOnFlash();
   }
 
   @override
@@ -135,21 +155,33 @@ class CameraWidgetState extends State<CameraWidget> {
     super.dispose();
   }
 
-  void onBack() {
-    setState(() {
-      image = null;
-    });
-  }
-
   void toggleFlash() {
     setState(() {
       if (flashOn) {
-        flashOn = false;
-        _controller.setFlashMode(FlashMode.off);
+        turnOffFlash();
       } else {
-        flashOn = true;
-        _controller.setFlashMode(FlashMode.torch);
+        turnOnFlash();
       }
     });
+  }
+
+  void toggleLoadingCropper() {
+    setState(() {
+      if (isLoadingCropper) {
+        isLoadingCropper = false;
+      } else {
+        isLoadingCropper = true;
+      }
+    });
+  }
+
+  void turnOnFlash() {
+    flashOn = true;
+    _controller.setFlashMode(FlashMode.torch);
+  }
+
+  void turnOffFlash() {
+    flashOn = false;
+    _controller.setFlashMode(FlashMode.off);
   }
 }

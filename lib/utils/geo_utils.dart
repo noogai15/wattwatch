@@ -1,10 +1,9 @@
 import 'package:flutter/services.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:location/location.dart' as loc;
+import 'package:shared_preferences/shared_preferences.dart';
 
 Future<Placemark> getUserLocation() async {
-  //call this async method from whereever you need
-
   loc.LocationData? myLocation;
   String error;
   final location = loc.Location();
@@ -28,11 +27,27 @@ Future<Placemark> getUserLocation() async {
 }
 
 Future<String> getPostalCode() async {
-  final location = await getUserLocation();
-  return location.postalCode!;
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getString('postalCode')!;
 }
 
 Future<String> getStreet() async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getString('street')!;
+}
+
+void savePostalCode(Placemark location) async {
+  final prefs = await SharedPreferences.getInstance();
+  prefs.setString('postalCode', location.postalCode!);
+}
+
+void saveStreet(Placemark location) async {
+  final prefs = await SharedPreferences.getInstance();
+  prefs.setString('street', location.street!);
+}
+
+void saveGeoPrefs() async {
   final location = await getUserLocation();
-  return location.street!;
+  saveStreet(location);
+  savePostalCode(location);
 }

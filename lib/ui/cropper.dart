@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:crop_your_image/crop_your_image.dart';
-import 'package:cropperx/cropperx.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tesseract_ocr/android_ios.dart';
@@ -20,32 +19,36 @@ class CropperScreen extends StatefulWidget {
 }
 
 class _CropperScreenState extends State<CropperScreen> {
+  final ImagePicker _picker = ImagePicker();
+  Uint8List? _imageBytes;
+  imgLib.Image? _image;
+
   @override
   void initState() {
     super.initState();
     _imageBytes = widget.imageBytes;
+    _image = imgLib.decodeImage(_imageBytes!);
   }
 
-  final ImagePicker _picker = ImagePicker();
-  final GlobalKey _cropperKey = GlobalKey(debugLabel: 'cropperKey');
-  Uint8List? _imageBytes;
   final _controller = CropController();
   Uint8List? _croppedImageBytes;
   String? ocrResult = null;
-  OverlayType _overlayType = OverlayType.rectangle;
-  int _rotationTurns = 0;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color(0xff252837),
       body: SafeArea(
         child: SingleChildScrollView(
+          physics: NeverScrollableScrollPhysics(),
           child: Column(
             children: [
               SizedBox(
-                  height: 500,
+                  height: 600,
                   child: Crop(
                       image: _imageBytes!,
+                      initialArea:
+                          Rect.fromLTRB(0, 400, _image!.width.toDouble(), 600),
                       controller: _controller,
                       onCropped: (image) {
                         setState(() {
@@ -71,7 +74,6 @@ class _CropperScreenState extends State<CropperScreen> {
                       onPressed: onConfirm,
                       child: Text('Confirm'),
                     ),
-                  if (ocrResult != null) Text(ocrResult!)
                 ],
               ),
               const SizedBox(height: 16),
@@ -102,7 +104,7 @@ class _CropperScreenState extends State<CropperScreen> {
   }
 
   Future<String> ocrScan(Uint8List imageBytes) async {
-    imgLib.Image tempImage = imgLib.decodeImage(imageBytes)!;
+    final tempImage = imgLib.decodeImage(imageBytes)!;
     final processedImgBytes = preprocessImg(tempImage);
     final tempDir = await getTemporaryDirectory();
     final tempImgDir = Directory('${tempDir.path}/images/');
@@ -113,7 +115,7 @@ class _CropperScreenState extends State<CropperScreen> {
     final tempFile = File(tempImgPath);
     await tempFile.writeAsBytes(processedImgBytes);
 
-    Map<String, dynamic> args = {
+    final args = <String, dynamic>{
       'psm': '8',
       'tessedit_char_whitelist': '0123456789',
       'preserve_interword_spaces': '0'

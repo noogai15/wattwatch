@@ -92,6 +92,10 @@ class SettingsPageState extends State<SettingsPage> {
     prefs.setString('counterNum', values.counterNum);
     prefs.setString('street', values.street);
     prefs.setString('postalCode', values.postalCode);
+
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text('Information gespeichert'),
+    ));
   }
 }
 
