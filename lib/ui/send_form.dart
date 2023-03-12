@@ -13,7 +13,7 @@ class SendFormDialogue extends StatefulWidget {
 }
 
 class SendFormDialogueState extends State<SendFormDialogue> {
-  final TextEditingController _postalCodeController = TextEditingController();
+  late SharedPreferences prefs;
   String counter = '';
   int? formattedCounter;
   SendFormDialogueState(this.counter);
@@ -21,26 +21,35 @@ class SendFormDialogueState extends State<SendFormDialogue> {
   @override
   void initState() {
     super.initState();
-    formattedCounter = formatCounter(counter);
+    setState(() {
+      formattedCounter = formatCounter(counter);
+    });
     initStateAsync();
   }
 
   void initStateAsync() async {
-    final prefs = await SharedPreferences.getInstance();
-    _postalCodeController.text = prefs.getString('postalCode')!;
+    prefs = await SharedPreferences.getInstance();
   }
 
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.0)), //this right here
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
       child: Container(
         height: 300.0,
         width: 300.0,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            if (formattedCounter == null)
+              Padding(
+                padding: const EdgeInsets.all(15.0),
+                child: Text(
+                  '''Zählerstand nicht erkannt, bitte manuell eingeben oder nochmal versuchen''',
+                  textAlign: TextAlign.start,
+                  style: TextStyle(color: Colors.red[400]),
+                ),
+              ),
             Padding(
               padding: EdgeInsets.all(15.0),
               child: TextField(
@@ -66,6 +75,9 @@ class SendFormDialogueState extends State<SendFormDialogue> {
       ),
     );
   }
-}
 
-void onSubmit() {}
+  void onSubmit() async {
+    saveCounterReading(formattedCounter!);
+    // postCounterNum(formattedCounter!);
+  }
+}
