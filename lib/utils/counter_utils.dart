@@ -4,15 +4,21 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 int? formatCounter(String counter) {
-  //Remove all 0s at the start and takes away any spaces
+  //Remove all 0s at the start and takes away any spaces, commas, and periods
   final firstLine = counter.trim().split('\n')[0];
-  final result = firstLine.replaceAll(' ', '').replaceAll(RegExp(r'^0+'), '');
+  final result =
+      firstLine.replaceAll(RegExp(r'[,. ]'), '').replaceAll(RegExp(r'^0+'), '');
   try {
-    if (result.isEmpty) return null;
+    if (result.isEmpty || !isValidCounter(int.parse(result))) return null;
     return int.parse(result);
   } catch (e) {
     return null;
   }
+}
+
+bool isValidCounter(int counter) {
+  if (counter <= 0 || counter > 1000000) return false;
+  return true;
 }
 
 void saveCounterReading(int formattedCounter) async {

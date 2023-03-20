@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/counter_utils.dart';
 
 class SendFormDialogue extends StatefulWidget {
-  String counterNum = '';
+  int? counterNum;
   SendFormDialogue(this.counterNum);
 
   @override
@@ -14,16 +14,12 @@ class SendFormDialogue extends StatefulWidget {
 
 class SendFormDialogueState extends State<SendFormDialogue> {
   late SharedPreferences prefs;
-  String counter = '';
-  int? formattedCounter;
+  int? counter;
   SendFormDialogueState(this.counter);
 
   @override
   void initState() {
     super.initState();
-    setState(() {
-      formattedCounter = formatCounter(counter);
-    });
     initStateAsync();
   }
 
@@ -41,7 +37,25 @@ class SendFormDialogueState extends State<SendFormDialogue> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            if (formattedCounter == null)
+            Padding(
+              padding: const EdgeInsets.all(15.0),
+              child: Text(
+                '''Bitte Zählerstand nochmal sorgfältig überprüfen!''',
+                textAlign: TextAlign.start,
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.all(15.0),
+              child: TextField(
+                keyboardType: TextInputType.number,
+                controller: TextEditingController(
+                    text: counter == null ? '' : counter.toString()),
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                decoration: InputDecoration(
+                    border: OutlineInputBorder(), labelText: 'Zahlerstand'),
+              ),
+            ),
+            if (counter == null)
               Padding(
                 padding: const EdgeInsets.all(15.0),
                 child: Text(
@@ -50,19 +64,6 @@ class SendFormDialogueState extends State<SendFormDialogue> {
                   style: TextStyle(color: Colors.red[400]),
                 ),
               ),
-            Padding(
-              padding: EdgeInsets.all(15.0),
-              child: TextField(
-                keyboardType: TextInputType.number,
-                controller: TextEditingController(
-                    text: formattedCounter == null
-                        ? ''
-                        : formattedCounter.toString()),
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                decoration: InputDecoration(
-                    border: OutlineInputBorder(), labelText: 'Zahlerstand'),
-              ),
-            ),
             Padding(
               padding: EdgeInsets.only(top: 50.0),
               child: ElevatedButton(
@@ -77,7 +78,7 @@ class SendFormDialogueState extends State<SendFormDialogue> {
   }
 
   void onSubmit() async {
-    saveCounterReading(formattedCounter!);
+    saveCounterReading(counter!);
     // postCounterNum(formattedCounter!);
   }
 }
