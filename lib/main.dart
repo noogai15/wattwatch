@@ -1,10 +1,10 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'ui/appbar.dart';
 import 'ui/bottombar.dart';
+import 'ui/init_form_dialogue.dart';
 import 'utils/counter_utils.dart';
 import 'utils/geo_utils.dart';
 import 'utils/styles_utils.dart';
@@ -25,19 +25,15 @@ class MyApp extends StatefulWidget {
 class MyAppState extends State<MyApp> {
   List<CounterReading>? allReadings;
   String? counterNum;
+  String? name;
+  String? street;
+  String? postal;
+  bool initDialogue = false;
+
   @override
   void initState() {
     super.initState();
-    initAsync();
-  }
-
-  void initAsync() async {
-    final allReadings = await getAllCounterReadings();
-    final counterNum = await getCounterNum();
-    setState(() {
-      this.allReadings = allReadings;
-      this.counterNum = counterNum;
-    });
+    getPrefs();
   }
 
   @override
@@ -45,72 +41,73 @@ class MyAppState extends State<MyApp> {
     final appBarHome = AppBarWidget(screenName: AppBarTypes.HOME);
 
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'WattWatch',
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.pink.shade300),
-      ),
-      home: Scaffold(
-        backgroundColor: Color(0xff4A6488),
-        bottomNavigationBar: Container(child: BottomBarWidget()),
-        appBar: PreferredSize(
-            preferredSize: appBarHome.preferredSize, child: appBarHome),
-        body: Column(children: [
-          Flexible(
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(22.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Ihre Zählernummer: ',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                              fontFamily: 'Avenir')),
-                      SizedBox(
-                        height: 10,
+        debugShowCheckedModeBanner: false,
+        title: 'WattWatch',
+        theme: ThemeData(
+          useMaterial3: true,
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.pink.shade300),
+        ),
+        home: Stack(children: [
+          Scaffold(
+            backgroundColor: Color(0xff4A6488),
+            bottomNavigationBar: Container(child: BottomBarWidget()),
+            appBar: PreferredSize(
+                preferredSize: appBarHome.preferredSize, child: appBarHome),
+            body: Column(children: [
+              Flexible(
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(22.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Ihre Zählernummer: ',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontFamily: 'Avenir')),
+                          SizedBox(
+                            height: 10,
+                          ),
+                          Text(
+                            counterNum ?? 'Kein Zählerstand gesetzt!',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontFamily: 'Avenir'),
+                          ),
+                          SizedBox(
+                            height: 24,
+                          ),
+                          Text(
+                            'Letzte Ablesungen:',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 24,
+                                fontFamily: 'Avenir'),
+                          ),
+                          SizedBox(
+                            height: 10,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8),
+                            child: createReadingsList(),
+                          )
+                        ],
                       ),
-                      Text(
-                        counterNum ?? 'Kein Zählerstand gesetzt!',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontFamily: 'Avenir'),
-                      ),
-                      SizedBox(
-                        height: 24,
-                      ),
-                      Text(
-                        'Letzte Ablesungen:',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontFamily: 'Avenir'),
-                      ),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: createReadingsList(),
-                      )
-                    ],
-                  ),
-                )
-              ],
-            ),
-          )
-        ]),
-      ),
-    );
-  }
-
-  Future<String?> getCounterNum() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('counterNum');
+                    )
+                  ],
+                ),
+              )
+            ]),
+          ),
+          if (shouldShowDialogue())
+            Positioned(
+                top: 200,
+                child: DialogueSequence(
+                    name ?? '', counterNum ?? '', street ?? '', postal ?? ''))
+        ]));
   }
 
   Container? createReadingsList() {
@@ -132,5 +129,29 @@ class MyAppState extends State<MyApp> {
         children: listChildren,
       ),
     );
+  }
+
+  void getPrefs() async {
+    final allReadings = await getAllCounterReadings();
+    final name = await getName();
+    final counterNum = await getCounterNum();
+    final street = await getStreet();
+    final postal = await getPostalCode();
+
+    setState(() {
+      this.allReadings = allReadings;
+      this.name = name;
+      this.counterNum = counterNum;
+      this.street = street;
+      this.postal = postal;
+    });
+  }
+
+  bool shouldShowDialogue() {
+    if (this.name == null ||
+        this.counterNum == null ||
+        this.street == null ||
+        this.postal == null) return true;
+    return false;
   }
 }

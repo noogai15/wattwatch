@@ -64,3 +64,13 @@ class CounterReading {
         DateTime.parse(json['date'] as String),
       );
 }
+
+Future<String?> getCounterNum() async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getString('counterNum');
+}
+
+Future<String?> getName() async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getString('name');
+}

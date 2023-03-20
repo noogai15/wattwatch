@@ -32,7 +32,7 @@ class SendFormDialogueState extends State<SendFormDialogue> {
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
       child: Container(
-        height: 300.0,
+        height: 350.0,
         width: 300.0,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

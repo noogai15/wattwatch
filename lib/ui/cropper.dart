@@ -94,7 +94,7 @@ class _CropperScreenState extends State<CropperScreen> {
   Uint8List preprocessImg(imgLib.Image image, double lumTreshold) {
     // image = imgLib.grayscale(image);
     image = imgLib.luminanceThreshold(threshold: lumTreshold, image);
-    image = imgLib.gaussianBlur(image, radius: 2);
+    image = imgLib.gaussianBlur(image, radius: 1);
     // imgLib.sobel(image, amount: 50);
     setState(() {
       _croppedImageBytes = imgLib.encodeBmp(image);
@@ -103,7 +103,10 @@ class _CropperScreenState extends State<CropperScreen> {
   }
 
   Future<String> ocrScan(Uint8List imageBytes) async {
-    var tempImgPath = await prepareImage(imageBytes, 0.5);
+    var tempImgPath = await prepareImage(
+      imageBytes,
+      0.5,
+    );
 
     final args = <String, dynamic>{
       'psm': '6',

@@ -26,14 +26,14 @@ Future<Placemark> getUserLocation() async {
   return placemarks[0];
 }
 
-Future<String> getPostalCode() async {
+Future<String?> getPostalCode() async {
   final prefs = await SharedPreferences.getInstance();
-  return prefs.getString('postalCode')!;
+  return prefs.getString('postalCode');
 }
 
-Future<String> getStreet() async {
+Future<String?> getStreet() async {
   final prefs = await SharedPreferences.getInstance();
-  return prefs.getString('street')!;
+  return prefs.getString('street');
 }
 
 void savePostalCode(Placemark location) async {
