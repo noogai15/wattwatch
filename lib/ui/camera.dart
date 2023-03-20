@@ -1,5 +1,6 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'cropper.dart';
@@ -16,6 +17,7 @@ class CameraWidgetState extends State<CameraWidget> {
   Future<void>? _initializeControllerFuture;
   late Canvas canvas;
 
+  final ImagePicker _picker = ImagePicker();
   bool isLoading = true;
   bool isLoadingCropper = false;
   bool predicting = false;
@@ -90,6 +92,9 @@ class CameraWidgetState extends State<CameraWidget> {
                                     Icons.flash_on,
                                     color: Color.fromARGB(255, 70, 122, 196),
                                   )),
+                        ElevatedButton(
+                            onPressed: onImagePicker,
+                            child: Text('Pick Image')),
                       ],
                     )
                   ],
@@ -183,5 +188,16 @@ class CameraWidgetState extends State<CameraWidget> {
   void turnOffFlash() {
     flashOn = false;
     _controller.setFlashMode(FlashMode.off);
+  }
+
+  void onImagePicker() async {
+    final pickedImg = await _picker.pickImage(source: ImageSource.gallery);
+    final bytes = await pickedImg!.readAsBytes();
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+          builder: (context) => CropperScreen(imageBytes: bytes)),
+    );
   }
 }

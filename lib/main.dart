@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'ui/appbar.dart';
 import 'ui/bottombar.dart';
@@ -23,6 +24,7 @@ class MyApp extends StatefulWidget {
 
 class MyAppState extends State<MyApp> {
   List<CounterReading>? allReadings;
+  String? counterNum;
   @override
   void initState() {
     super.initState();
@@ -31,8 +33,10 @@ class MyAppState extends State<MyApp> {
 
   void initAsync() async {
     final allReadings = await getAllCounterReadings();
+    final counterNum = await getCounterNum();
     setState(() {
       this.allReadings = allReadings;
+      this.counterNum = counterNum;
     });
   }
 
@@ -70,7 +74,7 @@ class MyAppState extends State<MyApp> {
                         height: 10,
                       ),
                       Text(
-                        'Use parameter for widget here',
+                        counterNum ?? 'Kein Zählerstand gesetzt!',
                         style: TextStyle(
                             color: Colors.white,
                             fontSize: 20,
@@ -102,6 +106,11 @@ class MyAppState extends State<MyApp> {
         ]),
       ),
     );
+  }
+
+  Future<String?> getCounterNum() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('counterNum');
   }
 
   Container? createReadingsList() {

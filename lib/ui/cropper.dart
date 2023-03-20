@@ -5,9 +5,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tesseract_ocr/android_ios.dart';
 import 'package:image/image.dart' as imgLib;
-import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../utils/counter_utils.dart';
 import 'send_form.dart';
 
 class CropperScreen extends StatefulWidget {
@@ -19,7 +19,6 @@ class CropperScreen extends StatefulWidget {
 }
 
 class _CropperScreenState extends State<CropperScreen> {
-  final ImagePicker _picker = ImagePicker();
   Uint8List? _imageBytes;
   imgLib.Image? _image;
 
@@ -46,9 +45,11 @@ class _CropperScreenState extends State<CropperScreen> {
               SizedBox(
                   height: 600,
                   child: Crop(
+                      baseColor: Colors.black,
+                      maskColor: Color.fromARGB(167, 0, 0, 0),
                       image: _imageBytes!,
                       initialArea:
-                          Rect.fromLTRB(0, 400, _image!.width.toDouble(), 600),
+                          Rect.fromLTRB(0, 700, _image!.width.toDouble(), 900),
                       controller: _controller,
                       onCropped: (image) {
                         setState(() {
@@ -67,8 +68,6 @@ class _CropperScreenState extends State<CropperScreen> {
                       _controller.crop();
                     },
                   ),
-                  ElevatedButton(
-                      onPressed: onImagePicker, child: Text('Pick Image')),
                   if (_croppedImageBytes != null)
                     ElevatedButton(
                       onPressed: onConfirm,
@@ -92,11 +91,11 @@ class _CropperScreenState extends State<CropperScreen> {
     Navigator.pop(context);
   }
 
-  Uint8List preprocessImg(imgLib.Image image) {
-    image = imgLib.grayscale(image);
-    image = imgLib.luminanceThreshold(image);
-    image = imgLib.gaussianBlur(image, radius: 1);
-    imgLib.sobel(image, amount: 10);
+  Uint8List preprocessImg(imgLib.Image image, double lumTreshold) {
+    // image = imgLib.grayscale(image);
+    image = imgLib.luminanceThreshold(threshold: lumTreshold, image);
+    image = imgLib.gaussianBlur(image, radius: 2);
+    // imgLib.sobel(image, amount: 50);
     setState(() {
       _croppedImageBytes = imgLib.encodeBmp(image);
     });
@@ -104,25 +103,27 @@ class _CropperScreenState extends State<CropperScreen> {
   }
 
   Future<String> ocrScan(Uint8List imageBytes) async {
-    final tempImage = imgLib.decodeImage(imageBytes)!;
-    final processedImgBytes = preprocessImg(tempImage);
-    final tempDir = await getTemporaryDirectory();
-    final tempImgDir = Directory('${tempDir.path}/images/');
-    if (!await tempImgDir.exists()) await tempImgDir.create(recursive: true);
-
-    final tempImgPath = '${tempImgDir.path}/tempImg.png';
-
-    final tempFile = File(tempImgPath);
-    await tempFile.writeAsBytes(processedImgBytes);
+    var tempImgPath = await prepareImage(imageBytes, 0.5);
 
     final args = <String, dynamic>{
-      'psm': '8',
-      'tessedit_char_whitelist': '0123456789',
-      'preserve_interword_spaces': '0'
+      'psm': '6',
+      'preserve_interword_spaces': '0',
+      'oem': '1'
     };
 
-    final ocrResult =
-        await FlutterTesseractOcr.extractText(tempImgPath, args: args);
+    var ocrResult = await FlutterTesseractOcr.extractText(tempImgPath,
+        args: args, language: 'digits');
+
+    //Keep retrying OCR with different luminance threshold settings
+    //(up to 0.5 cap) if no acceptable result was found
+    if (needsRetry(ocrResult)) {
+      for (var lum = 0.2; lum <= 0.5; lum += 0.05) {
+        tempImgPath = await prepareImage(imageBytes, lum);
+        ocrResult = await FlutterTesseractOcr.extractText(tempImgPath,
+            args: args, language: 'digits');
+        if (!needsRetry(ocrResult)) break;
+      }
+    }
     print('OCR RESULT: $ocrResult');
     setState(() {
       this.ocrResult = ocrResult;
@@ -130,20 +131,31 @@ class _CropperScreenState extends State<CropperScreen> {
     return ocrResult;
   }
 
+  Future<String> prepareImage(Uint8List imageBytes, double lumTreshhold) async {
+    final tempImage = imgLib.decodeImage(imageBytes)!;
+    final processedImgBytes = preprocessImg(tempImage, lumTreshhold);
+    final tempDir = await getTemporaryDirectory();
+    final tempImgDir = Directory('${tempDir.path}/images/');
+    if (!await tempImgDir.exists()) await tempImgDir.create(recursive: true);
+    final tempImgPath = '${tempImgDir.path}/tempImg.png';
+
+    final tempFile = File(tempImgPath);
+    await tempFile.writeAsBytes(processedImgBytes);
+    return tempImgPath;
+  }
+
+  bool needsRetry(String ocrResult) {
+    if (formatCounter(ocrResult) == null) return true;
+    return false;
+  }
+
   void onConfirm() async {
     final scanResult = await ocrScan(_croppedImageBytes!);
+    final formatted = formatCounter(scanResult);
     showDialog(
         context: context,
         builder: (BuildContext context) {
-          return SendFormDialogue(scanResult);
+          return SendFormDialogue(formatted);
         });
-  }
-
-  void onImagePicker() async {
-    final pickedImg = await _picker.pickImage(source: ImageSource.gallery);
-    final bytes = await pickedImg!.readAsBytes();
-    setState(() {
-      _croppedImageBytes = bytes;
-    });
   }
 }
