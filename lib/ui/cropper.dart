@@ -94,7 +94,11 @@ class _CropperScreenState extends State<CropperScreen> {
   Uint8List preprocessImg(imgLib.Image image, double lumTreshold) {
     // image = imgLib.grayscale(image);
     image = imgLib.luminanceThreshold(threshold: lumTreshold, image);
+<<<<<<< HEAD
     image = imgLib.gaussianBlur(image, radius: 2);
+=======
+    // image = imgLib.gaussianBlur(image, radius: 2);
+>>>>>>> 7e70020cf6510089872708a74773f5e20966c254
     // imgLib.sobel(image, amount: 50);
     setState(() {
       _croppedImageBytes = imgLib.encodeBmp(image);
@@ -112,7 +116,11 @@ class _CropperScreenState extends State<CropperScreen> {
     };
 
     var ocrResult = await FlutterTesseractOcr.extractText(tempImgPath,
+<<<<<<< HEAD
         args: args, language: 'digits');
+=======
+        args: args, language: 'digits_comma');
+>>>>>>> 7e70020cf6510089872708a74773f5e20966c254
 
     //Keep retrying OCR with different luminance threshold settings
     //(up to 0.5 cap) if no acceptable result was found
