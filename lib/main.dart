@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
+import '../utils/name_utils.dart';
 import 'ui/appbar.dart';
 import 'ui/bottombar.dart';
 import 'ui/init_form_dialogue.dart';
@@ -12,7 +13,7 @@ import 'utils/styles_utils.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   DartPluginRegistrant.ensureInitialized();
-  saveGeoPrefs();
+  setGeoPrefs();
   runApp(MyApp());
 }
 
@@ -28,12 +29,17 @@ class MyAppState extends State<MyApp> {
   String? name;
   String? street;
   String? postal;
-  bool initDialogue = false;
+  bool showDialog = false;
 
   @override
   void initState() {
     super.initState();
-    getPrefs();
+    initStateAsync();
+  }
+
+  void initStateAsync() async {
+    await getPrefs();
+    shouldShowDialogue();
   }
 
   @override
@@ -48,65 +54,77 @@ class MyAppState extends State<MyApp> {
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.pink.shade300),
         ),
         home: Stack(children: [
-          Scaffold(
-            backgroundColor: Color(0xff4A6488),
-            bottomNavigationBar: Container(child: BottomBarWidget()),
-            appBar: PreferredSize(
-                preferredSize: appBarHome.preferredSize, child: appBarHome),
-            body: Column(children: [
-              Flexible(
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(22.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Ihre Zählernummer: ',
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 24,
-                                  fontFamily: 'Avenir')),
-                          SizedBox(
-                            height: 10,
+          AbsorbPointer(
+            absorbing: this.showDialog,
+            child: Container(
+              foregroundDecoration: this.showDialog
+                  ? BoxDecoration(
+                      color: Color.fromARGB(200, 0, 0, 0),
+                      backgroundBlendMode: BlendMode.multiply)
+                  : null,
+              child: Scaffold(
+                backgroundColor: Color(0xff4A6488),
+                bottomNavigationBar: Container(child: BottomBarWidget()),
+                appBar: PreferredSize(
+                    preferredSize: appBarHome.preferredSize, child: appBarHome),
+                body: Column(children: [
+                  Flexible(
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(22.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Ihre Zählernummer: ',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 24,
+                                      fontFamily: 'Avenir')),
+                              SizedBox(
+                                height: 10,
+                              ),
+                              Text(
+                                counterNum ?? 'Kein Zählerstand gesetzt!',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontFamily: 'Avenir'),
+                              ),
+                              SizedBox(
+                                height: 24,
+                              ),
+                              Text(
+                                'Letzte Ablesungen:',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 24,
+                                    fontFamily: 'Avenir'),
+                              ),
+                              SizedBox(
+                                height: 10,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 8),
+                                child: createReadingsList(),
+                              )
+                            ],
                           ),
-                          Text(
-                            counterNum ?? 'Kein Zählerstand gesetzt!',
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                                fontFamily: 'Avenir'),
-                          ),
-                          SizedBox(
-                            height: 24,
-                          ),
-                          Text(
-                            'Letzte Ablesungen:',
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 24,
-                                fontFamily: 'Avenir'),
-                          ),
-                          SizedBox(
-                            height: 10,
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 8),
-                            child: createReadingsList(),
-                          )
-                        ],
-                      ),
-                    )
-                  ],
-                ),
-              )
-            ]),
+                        )
+                      ],
+                    ),
+                  )
+                ]),
+              ),
+            ),
           ),
-          if (shouldShowDialogue())
+          if (this.showDialog)
             Positioned(
-                top: 200,
                 child: DialogueSequence(
-                    name ?? '', counterNum ?? '', street ?? '', postal ?? ''))
+                    name ?? '', counterNum ?? '', street ?? '', postal ?? '',
+                    () {
+              closeDialog();
+            }))
         ]));
   }
 
@@ -131,7 +149,7 @@ class MyAppState extends State<MyApp> {
     );
   }
 
-  void getPrefs() async {
+  Future<bool> getPrefs() async {
     final allReadings = await getAllCounterReadings();
     final name = await getName();
     final counterNum = await getCounterNum();
@@ -145,13 +163,27 @@ class MyAppState extends State<MyApp> {
       this.street = street;
       this.postal = postal;
     });
+    return true;
   }
 
-  bool shouldShowDialogue() {
+  void closeDialog() {
+    setState(() {
+      this.showDialog = false;
+    });
+  }
+
+  void shouldShowDialogue() {
     if (this.name == null ||
         this.counterNum == null ||
         this.street == null ||
-        this.postal == null) return true;
-    return false;
+        this.postal == null) {
+      setState(() {
+        this.showDialog = true;
+      });
+    } else {
+      setState(() {
+        this.showDialog = false;
+      });
+    }
   }
 }

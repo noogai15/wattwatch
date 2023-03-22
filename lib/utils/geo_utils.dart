@@ -36,18 +36,31 @@ Future<String?> getStreet() async {
   return prefs.getString('street');
 }
 
-void savePostalCode(Placemark location) async {
+void setPostalCode(String postalCode) async {
   final prefs = await SharedPreferences.getInstance();
-  prefs.setString('postalCode', location.postalCode!);
+  prefs.setString('postalCode', postalCode);
 }
 
-void saveStreet(Placemark location) async {
+void setStreet(String street) async {
   final prefs = await SharedPreferences.getInstance();
-  prefs.setString('street', location.street!);
+  prefs.setString('street', street);
 }
 
-void saveGeoPrefs() async {
+void setGeoPrefs() async {
   final location = await getUserLocation();
-  saveStreet(location);
-  savePostalCode(location);
+  setStreet(location.street!);
+  setPostalCode(location.postalCode!);
+}
+
+bool isValidStreetAddress(String address) {
+  if (address.isEmpty) return false;
+  final addressRegex =
+      RegExp(r'^[a-zA-ZäöüßÄÖÜ]+(\s+[a-zA-ZäöüßÄÖÜ]+)*\s+\d+[a-zA-Z\d\s-]*$');
+  return addressRegex.hasMatch(address);
+}
+
+bool isValidPostalCode(String postalCode) {
+  if (postalCode.isEmpty) return false;
+  final postalCodeRegex = RegExp(r'^\d{4,10}$');
+  return postalCodeRegex.hasMatch(postalCode);
 }

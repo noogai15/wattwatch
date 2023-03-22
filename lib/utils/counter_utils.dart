@@ -70,7 +70,7 @@ Future<String?> getCounterNum() async {
   return prefs.getString('counterNum');
 }
 
-Future<String?> getName() async {
+void setCounterNum(String num) async {
   final prefs = await SharedPreferences.getInstance();
-  return prefs.getString('name');
+  prefs.setString('counterNum', num);
 }

@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
+import '../utils/counter_utils.dart';
+import '../utils/geo_utils.dart';
+import '../utils/name_utils.dart';
+
 class DialogueSequence extends StatefulWidget {
   String name;
   String counterNum;
   String street;
   String postal;
-  DialogueSequence(this.name, this.counterNum, this.street, this.postal);
+  final Function() onClose;
+  DialogueSequence(
+      this.name, this.counterNum, this.street, this.postal, this.onClose);
 
   @override
   _DialogueSequenceState createState() => _DialogueSequenceState(
@@ -23,12 +29,12 @@ class _DialogueSequenceState extends State<DialogueSequence> {
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _counterNumController = TextEditingController();
-  final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _streetController = TextEditingController();
   final TextEditingController _postalCodeController = TextEditingController();
 
   bool _isNameValid = false;
   bool _isCounterNumValid = false;
-  bool _isAddressValid = false;
+  bool _isStreetValid = false;
   bool _isPostalCodeValid = false;
 
   List<Widget> _screens = [];
@@ -45,19 +51,19 @@ class _DialogueSequenceState extends State<DialogueSequence> {
       CounterNumDialog(counterNumController: _counterNumController),
       LocationDialog(
         postalCodeController: _postalCodeController,
-        addressController: _addressController,
+        streetController: _streetController,
       )
     ];
     _controllers = [
       _nameController,
       _counterNumController,
-      _addressController,
+      _streetController,
       _postalCodeController
     ];
 
     _nameController.text = name;
     _counterNumController.text = counterNum;
-    _addressController.text = street;
+    _streetController.text = street;
     _postalCodeController.text = postal;
   }
 
@@ -94,8 +100,12 @@ class _DialogueSequenceState extends State<DialogueSequence> {
     }
   }
 
-  void finish() {
-    Navigator.of(context).pop();
+  void finish() async {
+    widget.onClose();
+    setName(_nameController.text);
+    setCounterNum(_counterNumController.text);
+    setPostalCode(_postalCodeController.text);
+    setStreet(_streetController.text);
   }
 
   void showPrevScreen(BuildContext context) {
@@ -114,17 +124,38 @@ class _DialogueSequenceState extends State<DialogueSequence> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('${_currentScreenIndex + 1}/${_screens.length}'),
-              if (!(_currentScreenIndex == 0))
-                ElevatedButton(
-                  onPressed: () => showPrevScreen(context),
-                  child: Text('Back'),
-                ),
-              ElevatedButton(
-                onPressed: () => _showNextScreen(context),
-                child: Text(_currentScreenIndex == _screens.length - 1
-                    ? 'Finish'
-                    : 'Next'),
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Text('${_currentScreenIndex + 1}/${_screens.length}'),
+              ),
+              Row(
+                children: [
+                  if (!(_currentScreenIndex == 0))
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: ElevatedButton(
+                        onPressed: () => showPrevScreen(context),
+                        child: Text(
+                          'Back',
+                          style: TextStyle(
+                              color: Color.fromARGB(255, 70, 122, 196)),
+                        ),
+                      ),
+                    ),
+                  Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: ElevatedButton(
+                      onPressed: () => _showNextScreen(context),
+                      child: Text(
+                        _currentScreenIndex == _screens.length - 1
+                            ? 'Finish'
+                            : 'Next',
+                        style:
+                            TextStyle(color: Color.fromARGB(255, 70, 122, 196)),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -152,7 +183,7 @@ class _NameDialogState extends State<NameDialog> {
         children: [
           Text('Vorname & Name'),
           createTextFormField(
-              widget.nameController, 'Bitte Vornamen und Namen angeben')
+              widget.nameController, 'Bitte Vorname & Name angeben')
         ],
       ),
     );
@@ -186,11 +217,11 @@ class _CounterNumDialogState extends State<CounterNumDialog> {
 }
 
 class LocationDialog extends StatefulWidget {
-  final TextEditingController addressController;
+  final TextEditingController streetController;
   final TextEditingController postalCodeController;
   const LocationDialog(
       {Key? key,
-      required this.addressController,
+      required this.streetController,
       required this.postalCodeController})
       : super(key: key);
 
@@ -208,7 +239,7 @@ class _LocationDialogState extends State<LocationDialog> {
         children: [
           Text('Straße und Hausnummer'),
           createTextFormField(
-              widget.addressController, 'Bitte Ihre Adresse angeben'),
+              widget.streetController, 'Bitte Ihre Adresse angeben'),
           Text('PLZ'),
           createTextFormField(
               widget.postalCodeController, 'Bitte Ihre PLZ angeben')
