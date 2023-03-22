@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:wattwatch/utils/styles_utils.dart';
 
 import '../utils/counter_utils.dart';
 import '../utils/geo_utils.dart';
@@ -137,8 +138,7 @@ class _DialogueSequenceState extends State<DialogueSequence> {
                         onPressed: () => showPrevScreen(context),
                         child: Text(
                           'Back',
-                          style: TextStyle(
-                              color: Color.fromARGB(255, 70, 122, 196)),
+                          style: TextStyle(color: textColorPrim),
                         ),
                       ),
                     ),
@@ -150,8 +150,7 @@ class _DialogueSequenceState extends State<DialogueSequence> {
                         _currentScreenIndex == _screens.length - 1
                             ? 'Finish'
                             : 'Next',
-                        style:
-                            TextStyle(color: Color.fromARGB(255, 70, 122, 196)),
+                        style: TextStyle(color: textColorPrim),
                       ),
                     ),
                   ),

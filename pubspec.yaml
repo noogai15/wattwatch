@@ -28,6 +28,7 @@ dependencies:
   http: ^0.13.5
   intl: ^0.18.0
   fluttertoast: ^8.2.1
+  font_awesome_flutter: ^10.4.0
   exif: ^3.1.2
   permission_handler: ^10.2.0
   flutter_tesseract_ocr: ^0.4.20

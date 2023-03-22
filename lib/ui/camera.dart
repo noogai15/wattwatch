@@ -1,8 +1,10 @@
 import 'package:camera/camera.dart';
 import 'package:exif/exif.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:wattwatch/utils/styles_utils.dart';
 
 import 'cropper.dart';
 
@@ -51,7 +53,7 @@ class CameraWidgetState extends State<CameraWidget> {
       builder: (context, snapshot) {
         return isLoading
             ? Center(
-                child: CircularProgressIndicator(),
+                child: CircularProgressIndicator(color: textColorPrim),
               )
             : Container(
                 color: Color(0xff252837),
@@ -72,30 +74,33 @@ class CameraWidgetState extends State<CameraWidget> {
                           )),
                         ),
                     ]),
+                    SizedBox(height: 4),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         ElevatedButton(
+                            onPressed: onImagePicker,
+                            child: Icon(
+                              FontAwesomeIcons.image,
+                              color: textColorPrim,
+                            )),
+                        SizedBox(width: 12),
+                        ElevatedButton(
                             onPressed: onTakeImage,
-                            child: Icon(Icons.camera_alt,
-                                color: Color.fromARGB(255, 70, 122, 196))),
-                        SizedBox(
-                          width: 12,
-                        ),
+                            child:
+                                Icon(Icons.camera_alt, color: textColorPrim)),
+                        SizedBox(width: 12),
                         ElevatedButton(
                             onPressed: toggleFlash,
                             child: flashOn == true
                                 ? Icon(
                                     Icons.flash_off,
-                                    color: Color.fromARGB(255, 70, 122, 196),
+                                    color: textColorPrim,
                                   )
                                 : Icon(
                                     Icons.flash_on,
-                                    color: Color.fromARGB(255, 70, 122, 196),
+                                    color: textColorPrim,
                                   )),
-                        ElevatedButton(
-                            onPressed: onImagePicker,
-                            child: Text('Pick Image')),
                       ],
                     )
                   ],

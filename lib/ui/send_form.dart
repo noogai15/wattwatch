@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../utils/counter_utils.dart';
+import '../utils/styles_utils.dart';
 
 class SendFormDialogue extends StatefulWidget {
   int? counterNum;
@@ -47,6 +49,7 @@ class SendFormDialogueState extends State<SendFormDialogue> {
             Padding(
               padding: EdgeInsets.all(15.0),
               child: TextField(
+                onChanged: (value) => counter = int.parse(value),
                 keyboardType: TextInputType.number,
                 controller: TextEditingController(
                     text: counter == null ? '' : counter.toString()),
@@ -68,7 +71,10 @@ class SendFormDialogueState extends State<SendFormDialogue> {
               padding: EdgeInsets.only(top: 50.0),
               child: ElevatedButton(
                 onPressed: onSubmit,
-                child: Text('Speichern & Abschicken'),
+                child: Text(
+                  'Speichern & Abschicken',
+                  style: TextStyle(color: textColorPrim),
+                ),
               ),
             ),
           ],
@@ -80,5 +86,16 @@ class SendFormDialogueState extends State<SendFormDialogue> {
   void onSubmit() async {
     saveCounterReading(counter!);
     // postCounterNum(formattedCounter!);
+    Navigator.popAndPushNamed(context, '/');
+    Fluttertoast.cancel();
+    Fluttertoast.showToast(
+            msg: 'Zählerstand abgegeben!',
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.CENTER,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+            fontSize: 16.0)
+        .then((value) => null);
   }
 }

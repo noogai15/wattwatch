@@ -17,4 +17,6 @@ TextField settingsTextField(String label, TextEditingController controller) {
   );
 }
 
-enum AppBarTypes { HOME, SETTINGS }
+const Color textColorPrim = Color.fromARGB(255, 70, 122, 196);
+
+enum AppBarTypes { HOME, EINSTELLUNGEN }

@@ -4,10 +4,12 @@ import 'package:crop_your_image/crop_your_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tesseract_ocr/android_ios.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image/image.dart' as imgLib;
 import 'package:path_provider/path_provider.dart';
 
 import '../utils/counter_utils.dart';
+import '../utils/styles_utils.dart';
 import 'send_form.dart';
 
 class CropperScreen extends StatefulWidget {
@@ -21,6 +23,7 @@ class CropperScreen extends StatefulWidget {
 class _CropperScreenState extends State<CropperScreen> {
   Uint8List? _imageBytes;
   imgLib.Image? _image;
+  bool loading = false;
 
   @override
   void initState() {
@@ -37,50 +40,81 @@ class _CropperScreenState extends State<CropperScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xff252837),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          physics: NeverScrollableScrollPhysics(),
-          child: Column(
-            children: [
-              SizedBox(
-                  height: 600,
-                  child: Crop(
-                      baseColor: Colors.black,
-                      maskColor: Color.fromARGB(167, 0, 0, 0),
-                      image: _imageBytes!,
-                      initialArea:
-                          Rect.fromLTRB(0, 700, _image!.width.toDouble(), 900),
-                      controller: _controller,
-                      onCropped: (image) {
-                        setState(() {
-                          _croppedImageBytes = image;
-                        });
-                      })),
-              const SizedBox(height: 16),
-              Wrap(
-                spacing: 16,
-                children: [
-                  ElevatedButton(
-                    child: Text(_croppedImageBytes == null
-                        ? 'Crop Image'
-                        : 'Re-crop image'),
-                    onPressed: () {
-                      _controller.crop();
-                    },
-                  ),
-                  if (_croppedImageBytes != null)
-                    ElevatedButton(
-                      onPressed: onConfirm,
-                      child: Text('Confirm'),
+      body: AbsorbPointer(
+        absorbing: loading,
+        child: SafeArea(
+          child: SingleChildScrollView(
+            physics: NeverScrollableScrollPhysics(),
+            child: Column(
+              children: [
+                Stack(
+                  children: [
+                    SizedBox(
+                      height: 600,
+                      child: Crop(
+                          baseColor: Colors.black,
+                          maskColor: Color.fromARGB(167, 0, 0, 0),
+                          image: _imageBytes!,
+                          initialArea: Rect.fromLTRB(
+                              0, 700, _image!.width.toDouble(), 900),
+                          controller: _controller,
+                          onCropped: (image) {
+                            setState(() {
+                              _croppedImageBytes = image;
+                            });
+                          }),
                     ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              if (_croppedImageBytes != null)
-                Padding(
-                    padding: const EdgeInsets.all(36.0),
-                    child: Image.memory(_croppedImageBytes!)),
-            ],
+                    if (loading)
+                      Positioned.fill(
+                        child: Center(
+                            child: Container(
+                          color: Colors.black54,
+                          child: Center(
+                            child:
+                                CircularProgressIndicator(color: textColorPrim),
+                          ),
+                        )),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Wrap(
+                  children: [
+                    Stack(
+                      alignment: Alignment.topRight,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () => {_controller.crop()},
+                          child: Icon(
+                            FontAwesomeIcons.cropSimple,
+                            color: textColorPrim,
+                          ),
+                        ),
+                        if (_croppedImageBytes != null)
+                          Positioned(
+                              top: 0,
+                              bottom: 15,
+                              right: 1,
+                              child: Icon(
+                                Icons.loop_outlined,
+                                color: Colors.black87,
+                                size: 24,
+                              ))
+                      ],
+                    ),
+                    SizedBox(width: 12),
+                    if (_croppedImageBytes != null)
+                      ElevatedButton(
+                          onPressed: onConfirm,
+                          child: Icon(
+                            Icons.check,
+                            color: textColorPrim,
+                            size: 32,
+                          )),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -153,7 +187,9 @@ class _CropperScreenState extends State<CropperScreen> {
   }
 
   void onConfirm() async {
+    setState(() => this.loading = true);
     final scanResult = await ocrScan(_croppedImageBytes!);
+    setState(() => this.loading = false);
     final formatted = formatCounter(scanResult);
     showDialog(
         context: context,

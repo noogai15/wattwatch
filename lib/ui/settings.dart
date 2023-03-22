@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../utils/styles_utils.dart' as styles;
+import '../utils/styles_utils.dart';
 import 'appbar.dart';
 import 'bottombar.dart';
 
@@ -39,7 +40,8 @@ class SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final appBarHome = AppBarWidget(screenName: styles.AppBarTypes.SETTINGS);
+    final appBarHome =
+        AppBarWidget(screenName: styles.AppBarTypes.EINSTELLUNGEN);
 
     return Scaffold(
       backgroundColor: Color(0xff4A6488),
@@ -74,7 +76,8 @@ class SettingsPageState extends State<SettingsPage> {
                                 street: _streetController.text,
                                 postalCode: _postalCodeController.text)),
                             child: Text('Speichern',
-                                style: TextStyle(fontSize: 16))),
+                                style: TextStyle(
+                                    fontSize: 16, color: textColorPrim))),
                       ],
                     )
                   ],
@@ -96,6 +99,7 @@ class SettingsPageState extends State<SettingsPage> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text('Information gespeichert'),
     ));
+    Navigator.popAndPushNamed(context, '/');
   }
 }
 
