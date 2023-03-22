@@ -74,7 +74,9 @@ class SettingsPageState extends State<SettingsPage> {
                                 street: _streetController.text,
                                 postalCode: _postalCodeController.text)),
                             child: Text('Speichern',
-                                style: TextStyle(fontSize: 16))),
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    color: Color.fromARGB(255, 70, 122, 196)))),
                       ],
                     )
                   ],
@@ -96,6 +98,7 @@ class SettingsPageState extends State<SettingsPage> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text('Information gespeichert'),
     ));
+    Navigator.popAndPushNamed(context, '/');
   }
 }
 

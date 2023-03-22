@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wattwatch/utils/styles_utils.dart' as styles;
 
-import 'settings.dart';
-
 class AppBarWidget extends StatelessWidget implements PreferredSizeWidget {
   final styles.AppBarTypes screenName;
   const AppBarWidget({super.key, required this.screenName});
@@ -34,8 +32,7 @@ class AppBarWidget extends StatelessWidget implements PreferredSizeWidget {
   }
 
   void onSettingsPressed(BuildContext context) {
-    Navigator.push(
-        context, MaterialPageRoute(builder: (context) => SettingsPage()));
+    Navigator.pushNamed(context, '/settings');
   }
 
   @override
