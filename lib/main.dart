@@ -3,9 +3,9 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'ui/homepage.dart';
-import 'ui/settings.dart';
-import 'utils/geo_utils.dart';
+import 'views/homepage.dart';
+import 'views/settings.dart';
+import 'controller/geo_controller.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();

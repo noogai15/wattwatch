@@ -20,17 +20,20 @@ class BottomBarWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return BottomAppBar(
       color: Color(0xff252837),
-      child: OutlinedButton(
-        onPressed: () => onPressed(context),
-        child: Icon(
-          Icons.bolt,
-          size: 46,
-          color: Colors.amber[600],
-        ),
-        style: OutlinedButton.styleFrom(
-          minimumSize: Size.fromHeight(40),
-          shape: CircleBorder(),
-          side: BorderSide(color: Colors.white, width: 4),
+      child: Ink(
+        decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+        child: OutlinedButton(
+          onPressed: () => onPressed(context),
+          child: Icon(
+            Icons.bolt,
+            size: 46,
+            color: Colors.amber[600],
+          ),
+          style: OutlinedButton.styleFrom(
+            minimumSize: Size.fromHeight(40),
+            shape: CircleBorder(),
+            side: BorderSide(color: Color(0xff252837), width: 4),
+          ),
         ),
       ),
     );

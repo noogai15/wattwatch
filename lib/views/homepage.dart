@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-import '../ui/appbar.dart';
-import '../ui/bottombar.dart';
-import '../ui/init_form_dialogue.dart';
-import '../utils/counter_utils.dart';
-import '../utils/geo_utils.dart';
-import '../utils/name_utils.dart';
-import '../utils/styles_utils.dart';
+import '../controller/counter_controller.dart';
+import '../controller/geo_controller.dart';
+import '../controller/name_controller.dart';
+import '../controller/styles_controller.dart';
+import '../views/appbar.dart';
+import '../views/bottombar.dart';
+import '../views/init_form_dialogue.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -35,7 +35,7 @@ class HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final appBarHome = AppBarWidget(screenName: AppBarTypes.HOME);
+    final appBarHome = AppBarWidget(screenName: AppBarTypes.START);
 
     return Stack(children: [
       AbsorbPointer(
@@ -160,7 +160,11 @@ class HomePageState extends State<HomePage> {
     if (this.name == null ||
         this.counterNum == null ||
         this.street == null ||
-        this.postal == null) {
+        this.postal == null ||
+        this.name!.isEmpty ||
+        this.counterNum!.isEmpty ||
+        this.street!.isEmpty ||
+        this.postal!.isEmpty) {
       setState(() {
         this.showDialog = true;
       });

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../utils/styles_utils.dart' as styles;
-import '../utils/styles_utils.dart';
+import '../controller/styles_controller.dart' as styles;
+import '../controller/styles_controller.dart';
 import 'appbar.dart';
 import 'bottombar.dart';
 

@@ -46,21 +46,23 @@ void setStreet(String street) async {
   prefs.setString('street', street);
 }
 
-void setGeoPrefs() async {
+Future<bool> setGeoPrefs() async {
   final location = await getUserLocation();
   setStreet(location.street!);
   setPostalCode(location.postalCode!);
+  return true;
 }
 
 bool isValidStreetAddress(String address) {
   if (address.isEmpty) return false;
-  final addressRegex =
-      RegExp(r'^[a-zA-ZäöüßÄÖÜ]+(\s+[a-zA-ZäöüßÄÖÜ]+)*\s+\d+[a-zA-Z\d\s-]*$');
+  final addressRegex = RegExp(
+      r"^[a-zäöüß]+([-.''\s]+[a-zäöüß]+)*\s+\d+[-\s\d\w]*$",
+      caseSensitive: false);
   return addressRegex.hasMatch(address);
 }
 
 bool isValidPostalCode(String postalCode) {
   if (postalCode.isEmpty) return false;
-  final postalCodeRegex = RegExp(r'^\d{4,10}$');
+  final postalCodeRegex = RegExp(r'^[1-9]\d{4}$');
   return postalCodeRegex.hasMatch(postalCode);
 }

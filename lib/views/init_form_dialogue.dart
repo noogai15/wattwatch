@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:wattwatch/utils/styles_utils.dart';
+import 'package:wattwatch/controller/styles_controller.dart';
 
-import '../utils/counter_utils.dart';
-import '../utils/geo_utils.dart';
-import '../utils/name_utils.dart';
+import '../controller/counter_controller.dart';
+import '../controller/geo_controller.dart';
+import '../controller/name_controller.dart';
 
 class DialogueSequence extends StatefulWidget {
   String name;
@@ -137,7 +137,7 @@ class _DialogueSequenceState extends State<DialogueSequence> {
                       child: ElevatedButton(
                         onPressed: () => showPrevScreen(context),
                         child: Text(
-                          'Back',
+                          'Zurück',
                           style: TextStyle(color: textColorPrim),
                         ),
                       ),
@@ -148,8 +148,8 @@ class _DialogueSequenceState extends State<DialogueSequence> {
                       onPressed: () => _showNextScreen(context),
                       child: Text(
                         _currentScreenIndex == _screens.length - 1
-                            ? 'Finish'
-                            : 'Next',
+                            ? 'Fertig'
+                            : 'Weiter',
                         style: TextStyle(color: textColorPrim),
                       ),
                     ),
@@ -229,6 +229,13 @@ class LocationDialog extends StatefulWidget {
 }
 
 class _LocationDialogState extends State<LocationDialog> {
+  bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -236,7 +243,25 @@ class _LocationDialogState extends State<LocationDialog> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Straße und Hausnummer'),
+          Row(
+            children: [
+              Text('Straße und Hausnummer'),
+              SizedBox(
+                width: 12,
+              ),
+              GestureDetector(
+                  onTap: onGetLocation,
+                  child: isLoading
+                      ? SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            color: textColorPrim,
+                          ),
+                        )
+                      : Icon(Icons.location_searching, color: textColorPrim))
+            ],
+          ),
           createTextFormField(
               widget.streetController, 'Bitte Ihre Adresse angeben'),
           Text('PLZ'),
@@ -245,6 +270,21 @@ class _LocationDialogState extends State<LocationDialog> {
         ],
       ),
     );
+  }
+
+  void onGetLocation() {
+    setState(() {
+      isLoading = true;
+    });
+    setGeoPrefs().then((value) => {
+          getStreet().then((street) =>
+              setState(() => widget.streetController.text = street!)),
+          getPostalCode().then((postalCode) =>
+              setState(() => widget.postalCodeController.text = postalCode!)),
+          setState(
+            () => isLoading = false,
+          )
+        });
   }
 }
 
@@ -257,6 +297,13 @@ TextFormField createTextFormField(
       }
     },
     controller: controller,
-    decoration: InputDecoration(hintText: hint),
+    decoration: InputDecoration(
+        hintText: hint,
+        enabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: Color(0xff252837)),
+        ),
+        focusedBorder: UnderlineInputBorder(
+          borderSide: BorderSide(width: 3, color: Color(0xff252837)),
+        )),
   );
 }

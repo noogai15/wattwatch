@@ -1,10 +1,9 @@
 import 'package:camera/camera.dart';
-import 'package:exif/exif.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:wattwatch/utils/styles_utils.dart';
+import 'package:wattwatch/controller/styles_controller.dart';
 
 import 'cropper.dart';
 
@@ -151,7 +150,6 @@ class CameraWidgetState extends State<CameraWidget> {
     final xFile = await _controller.takePicture();
     turnOffFlash();
     final imageBytes = await xFile.readAsBytes();
-    final exif = await readExifFromBytes(imageBytes);
     toggleLoadingCropper();
     await Navigator.push(
       context,

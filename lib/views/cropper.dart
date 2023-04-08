@@ -8,8 +8,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image/image.dart' as imgLib;
 import 'package:path_provider/path_provider.dart';
 
-import '../utils/counter_utils.dart';
-import '../utils/styles_utils.dart';
+import '../controller/counter_controller.dart';
+import '../controller/styles_controller.dart';
 import 'send_form.dart';
 
 class CropperScreen extends StatefulWidget {
@@ -126,10 +126,11 @@ class _CropperScreenState extends State<CropperScreen> {
   }
 
   Uint8List preprocessImg(imgLib.Image image, double lumTreshold) {
-    // image = imgLib.grayscale(image);
     image = imgLib.luminanceThreshold(threshold: lumTreshold, image);
+    image = imgLib.invert(image);
     image = imgLib.gaussianBlur(image, radius: 1);
-    // imgLib.sobel(image, amount: 50);
+    File('/assets').writeAsBytesSync(image.getBytes());
+
     setState(() {
       _croppedImageBytes = imgLib.encodeBmp(image);
     });
@@ -139,13 +140,14 @@ class _CropperScreenState extends State<CropperScreen> {
   Future<String> ocrScan(Uint8List imageBytes) async {
     var tempImgPath = await prepareImage(
       imageBytes,
-      0.5,
+      0.3,
     );
 
     final args = <String, dynamic>{
       'psm': '6',
       'preserve_interword_spaces': '0',
-      'oem': '1'
+      'oem': '1',
+      'tessedit_write_images': 'true'
     };
 
     var ocrResult = await FlutterTesseractOcr.extractText(tempImgPath,
