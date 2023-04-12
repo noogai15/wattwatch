@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:image/image.dart' as img;
 
 class ImageUtils {
   static Uint8List getCameraImageBytes(CameraImage cameraImage) {
@@ -32,5 +33,20 @@ class ImageUtils {
     }
 
     return sum / (width * height);
+  }
+
+  static img.Image upscaleImage(img.Image image, double scaleFactor) {
+    // Neue Dimensionen ausrechnen
+    final newWidth = (image.width * scaleFactor).round();
+    final newHeight = (image.height * scaleFactor).round();
+
+    // Bild skalieren
+    final dstImage = img.copyResize(image,
+        width: newWidth,
+        height: newHeight,
+        interpolation: img.Interpolation.cubic);
+
+    // Bild zurückgeben
+    return dstImage;
   }
 }

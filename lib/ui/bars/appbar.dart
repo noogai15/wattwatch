@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:wattwatch/controller/styles_controller.dart' as styles;
+import 'package:wattwatch/utils/styles_utils.dart' as styles;
 
 class AppBarWidget extends StatelessWidget implements PreferredSizeWidget {
   final styles.AppBarTypes screenName;

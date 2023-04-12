@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../controller/styles_controller.dart' as styles;
-import '../controller/styles_controller.dart';
-import 'appbar.dart';
-import 'bottombar.dart';
+import '../../models/settings_values_model.dart';
+import '../../utils/styles_utils.dart' as styles;
+import '../../utils/styles_utils.dart';
+import '../bars/appbar.dart';
+import '../bars/bottombar.dart';
 
 class SettingsPage extends StatefulWidget {
   @override
@@ -101,17 +102,4 @@ class SettingsPageState extends State<SettingsPage> {
     ));
     Navigator.popAndPushNamed(context, '/');
   }
-}
-
-class SettingsValues {
-  final String name;
-  final String counterNum;
-  final String street;
-  final String postalCode;
-
-  const SettingsValues(
-      {required this.name,
-      required this.counterNum,
-      required this.street,
-      required this.postalCode});
 }

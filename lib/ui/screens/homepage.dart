@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../controller/counter_controller.dart';
-import '../controller/geo_controller.dart';
-import '../controller/name_controller.dart';
-import '../controller/styles_controller.dart';
-import '../views/appbar.dart';
-import '../views/bottombar.dart';
-import '../views/init_form_dialogue.dart';
+import '../../models/counter_reading_model.dart';
+import '../../utils/counter_utils.dart';
+import '../../utils/geo_utils.dart';
+import '../../utils/name_utils.dart';
+import '../../utils/styles_utils.dart';
+import '../bars/appbar.dart';
+import '../bars/bottombar.dart';
+import '../dialogues/init_form_dialogue.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

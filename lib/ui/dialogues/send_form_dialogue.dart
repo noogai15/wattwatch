@@ -3,8 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../controller/counter_controller.dart';
-import '../controller/styles_controller.dart';
+import '../../utils/counter_utils.dart';
+import '../../utils/styles_utils.dart';
 
 class SendFormDialogue extends StatefulWidget {
   int? counterNum;

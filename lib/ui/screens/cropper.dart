@@ -8,9 +8,9 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image/image.dart' as imgLib;
 import 'package:path_provider/path_provider.dart';
 
-import '../controller/counter_controller.dart';
-import '../controller/styles_controller.dart';
-import 'send_form.dart';
+import '../../utils/counter_utils.dart';
+import '../../utils/styles_utils.dart';
+import '../dialogues/send_form_dialogue.dart';
 
 class CropperScreen extends StatefulWidget {
   final Uint8List imageBytes;
@@ -126,10 +126,10 @@ class _CropperScreenState extends State<CropperScreen> {
   }
 
   Uint8List preprocessImg(imgLib.Image image, double lumTreshold) {
+    // image = ImageUtils.upscaleImage(image, 2);
     image = imgLib.luminanceThreshold(threshold: lumTreshold, image);
     image = imgLib.invert(image);
     image = imgLib.gaussianBlur(image, radius: 1);
-    File('/assets').writeAsBytesSync(image.getBytes());
 
     setState(() {
       _croppedImageBytes = imgLib.encodeBmp(image);
@@ -173,14 +173,20 @@ class _CropperScreenState extends State<CropperScreen> {
   Future<String> prepareImage(Uint8List imageBytes, double lumTreshhold) async {
     final tempImage = imgLib.decodeImage(imageBytes)!;
     final processedImgBytes = preprocessImg(tempImage, lumTreshhold);
+
+    final tempImgPath = await saveToTempDir(await processedImgBytes, 'tempImg');
+    return tempImgPath;
+  }
+
+  Future<String> saveToTempDir(Uint8List imageBytes, String name) async {
     final tempDir = await getTemporaryDirectory();
-    final tempImgDir = Directory('${tempDir.path}/images/');
+    final tempImgDir = Directory('${tempDir.path}/images');
     if (!await tempImgDir.exists()) await tempImgDir.create(recursive: true);
-    final tempImgPath = '${tempImgDir.path}/tempImg.png';
+    final tempImgPath = '${tempImgDir.path}/${name}.png';
 
     final tempFile = File(tempImgPath);
-    await tempFile.writeAsBytes(processedImgBytes);
-    return tempImgPath;
+    await tempFile.writeAsBytes(imageBytes);
+    return tempFile.path;
   }
 
   bool needsRetry(String ocrResult) {
