@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:wattwatch/controller/styles_controller.dart';
+import 'package:wattwatch/utils/styles_utils.dart';
 
-import '../controller/counter_controller.dart';
-import '../controller/geo_controller.dart';
-import '../controller/name_controller.dart';
+import '../../utils/counter_utils.dart';
+import '../../utils/geo_utils.dart';
+import '../../utils/name_utils.dart';
 
 class DialogueSequence extends StatefulWidget {
   String name;

@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:wattwatch/controller/styles_controller.dart';
 
+import '../../utils/styles_utils.dart';
 import 'cropper.dart';
 
 class CameraWidget extends StatefulWidget {
@@ -28,16 +28,7 @@ class CameraWidgetState extends State<CameraWidget> {
   @override
   void initState() {
     super.initState();
-    initStateAsync();
-  }
-
-  void initStateAsync() async {
     initCameraController();
-  }
-
-  Future<bool> _onNavBack() async {
-    setState(() {});
-    return true;
   }
 
   @override
@@ -148,7 +139,7 @@ class CameraWidgetState extends State<CameraWidget> {
   void onTakeImage() async {
     toggleLoadingCropper();
     final xFile = await _controller.takePicture();
-    turnOffFlash();
+    if (flashOn) toggleFlash();
     final imageBytes = await xFile.readAsBytes();
     toggleLoadingCropper();
     await Navigator.push(
@@ -156,7 +147,7 @@ class CameraWidgetState extends State<CameraWidget> {
       MaterialPageRoute<void>(
           builder: (context) => CropperScreen(imageBytes: imageBytes)),
     );
-    turnOnFlash();
+    if (flashOn) toggleFlash();
   }
 
   @override
@@ -167,11 +158,8 @@ class CameraWidgetState extends State<CameraWidget> {
 
   void toggleFlash() {
     setState(() {
-      if (flashOn) {
-        turnOffFlash();
-      } else {
-        turnOnFlash();
-      }
+      flashOn = !flashOn;
+      _controller.setFlashMode(flashOn ? FlashMode.torch : FlashMode.off);
     });
   }
 
@@ -183,16 +171,6 @@ class CameraWidgetState extends State<CameraWidget> {
         isLoadingCropper = true;
       }
     });
-  }
-
-  void turnOnFlash() {
-    flashOn = true;
-    _controller.setFlashMode(FlashMode.torch);
-  }
-
-  void turnOffFlash() {
-    flashOn = false;
-    _controller.setFlashMode(FlashMode.off);
   }
 
   void onImagePicker() async {

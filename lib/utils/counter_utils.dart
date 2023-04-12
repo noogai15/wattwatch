@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-int? formatCounter(String counter) {
+import '../models/counter_reading_model.dart';
+
+int? parseAndValidateCounter(String counter) {
   //Remove all 0s at the start and takes away any spaces, commas, and periods
   final firstLine = counter.trim().split('\n')[0];
   final result =
@@ -46,23 +48,6 @@ Future<List<CounterReading>?> getAllCounterReadings() async {
 String formatDate(DateTime date) {
   final formattedDate = DateFormat('dd/MM/yy').format(date);
   return formattedDate;
-}
-
-class CounterReading {
-  int counterState;
-  DateTime date;
-
-  CounterReading(this.counterState, this.date);
-
-  Map<String, dynamic> toJson() => {
-        'counterState': counterState,
-        'date': date.toIso8601String(),
-      };
-
-  static CounterReading fromJson(json) => CounterReading(
-        json['counterState'] as int,
-        DateTime.parse(json['date'] as String),
-      );
 }
 
 Future<String?> getCounterNum() async {

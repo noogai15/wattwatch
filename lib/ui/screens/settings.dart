@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../controller/styles_controller.dart' as styles;
-import '../controller/styles_controller.dart';
-import 'appbar.dart';
-import 'bottombar.dart';
+import '../../models/settings_values_model.dart';
+import '../../utils/styles_utils.dart' as styles;
+import '../../utils/styles_utils.dart';
+import '../bars/appbar.dart';
+import '../bars/bottombar.dart';
 
 class SettingsPage extends StatefulWidget {
   @override
@@ -12,10 +13,10 @@ class SettingsPage extends StatefulWidget {
 }
 
 class SettingsPageState extends State<SettingsPage> {
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _counterController = TextEditingController();
-  final TextEditingController _streetController = TextEditingController();
-  final TextEditingController _postalCodeController = TextEditingController();
+  late TextEditingController _nameController;
+  late TextEditingController _counterController;
+  late TextEditingController _streetController;
+  late TextEditingController _postalCodeController;
   late SharedPreferences prefs;
 
   var name;
@@ -30,12 +31,15 @@ class SettingsPageState extends State<SettingsPage> {
 
   void initStateAsync() async {
     prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _nameController.text = prefs.getString('name') ?? '';
-      _counterController.text = prefs.getString('counterNum') ?? '';
-      _postalCodeController.text = prefs.getString('postalCode') ?? '';
-      _streetController.text = prefs.getString('street') ?? '';
-    });
+    _nameController =
+        TextEditingController(text: prefs.getString('name') ?? '');
+    _counterController =
+        TextEditingController(text: prefs.getString('counterNum') ?? '');
+    _postalCodeController =
+        TextEditingController(text: prefs.getString('postalCode') ?? '');
+    _streetController =
+        TextEditingController(text: prefs.getString('street') ?? '');
+    setState(() {});
   }
 
   @override
@@ -101,17 +105,4 @@ class SettingsPageState extends State<SettingsPage> {
     ));
     Navigator.popAndPushNamed(context, '/');
   }
-}
-
-class SettingsValues {
-  final String name;
-  final String counterNum;
-  final String street;
-  final String postalCode;
-
-  const SettingsValues(
-      {required this.name,
-      required this.counterNum,
-      required this.street,
-      required this.postalCode});
 }

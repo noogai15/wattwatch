@@ -8,9 +8,9 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image/image.dart' as imgLib;
 import 'package:path_provider/path_provider.dart';
 
-import '../controller/counter_controller.dart';
-import '../controller/styles_controller.dart';
-import 'send_form.dart';
+import '../../utils/counter_utils.dart';
+import '../../utils/styles_utils.dart';
+import '../dialogues/send_form_dialogue.dart';
 
 class CropperScreen extends StatefulWidget {
   final Uint8List imageBytes;
@@ -64,17 +64,18 @@ class _CropperScreenState extends State<CropperScreen> {
                             });
                           }),
                     ),
-                    if (loading)
-                      Positioned.fill(
-                        child: Center(
-                            child: Container(
-                          color: Colors.black54,
-                          child: Center(
-                            child:
-                                CircularProgressIndicator(color: textColorPrim),
-                          ),
-                        )),
-                      ),
+                    loading
+                        ? Positioned.fill(
+                            child: Center(
+                                child: Container(
+                              color: Colors.black54,
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                    color: textColorPrim),
+                              ),
+                            )),
+                          )
+                        : Container()
                   ],
                 ),
                 const SizedBox(height: 4),
@@ -84,7 +85,7 @@ class _CropperScreenState extends State<CropperScreen> {
                       alignment: Alignment.topRight,
                       children: [
                         ElevatedButton(
-                          onPressed: () => {_controller.crop()},
+                          onPressed: _controller.crop,
                           child: Icon(
                             FontAwesomeIcons.cropSimple,
                             color: textColorPrim,
@@ -126,10 +127,10 @@ class _CropperScreenState extends State<CropperScreen> {
   }
 
   Uint8List preprocessImg(imgLib.Image image, double lumTreshold) {
+    // image = ImageUtils.upscaleImage(image, 2);
     image = imgLib.luminanceThreshold(threshold: lumTreshold, image);
     image = imgLib.invert(image);
     image = imgLib.gaussianBlur(image, radius: 1);
-    File('/assets').writeAsBytesSync(image.getBytes());
 
     setState(() {
       _croppedImageBytes = imgLib.encodeBmp(image);
@@ -173,26 +174,31 @@ class _CropperScreenState extends State<CropperScreen> {
   Future<String> prepareImage(Uint8List imageBytes, double lumTreshhold) async {
     final tempImage = imgLib.decodeImage(imageBytes)!;
     final processedImgBytes = preprocessImg(tempImage, lumTreshhold);
-    final tempDir = await getTemporaryDirectory();
-    final tempImgDir = Directory('${tempDir.path}/images/');
-    if (!await tempImgDir.exists()) await tempImgDir.create(recursive: true);
-    final tempImgPath = '${tempImgDir.path}/tempImg.png';
 
-    final tempFile = File(tempImgPath);
-    await tempFile.writeAsBytes(processedImgBytes);
+    final tempImgPath = await saveToTempDir(await processedImgBytes, 'tempImg');
     return tempImgPath;
   }
 
-  bool needsRetry(String ocrResult) {
-    if (formatCounter(ocrResult) == null) return true;
-    return false;
+  Future<String> saveToTempDir(Uint8List imageBytes, String name) async {
+    final tempDir = await getTemporaryDirectory();
+    final tempImgDir = Directory('${tempDir.path}/images');
+    if (!await tempImgDir.exists()) await tempImgDir.create(recursive: true);
+    final tempImgPath = '${tempImgDir.path}/${name}.png';
+
+    final tempFile = File(tempImgPath);
+    await tempFile.writeAsBytes(imageBytes);
+
+    return tempFile.path;
   }
+
+  bool needsRetry(String ocrResult) =>
+      parseAndValidateCounter(ocrResult) == null;
 
   void onConfirm() async {
     setState(() => this.loading = true);
     final scanResult = await ocrScan(_croppedImageBytes!);
     setState(() => this.loading = false);
-    final formatted = formatCounter(scanResult);
+    final formatted = parseAndValidateCounter(scanResult);
     showDialog(
         context: context,
         builder: (BuildContext context) {

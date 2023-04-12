@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../controller/counter_controller.dart';
-import '../controller/geo_controller.dart';
-import '../controller/name_controller.dart';
-import '../controller/styles_controller.dart';
-import '../views/appbar.dart';
-import '../views/bottombar.dart';
-import '../views/init_form_dialogue.dart';
+import '../../models/counter_reading_model.dart';
+import '../../utils/counter_utils.dart';
+import '../../utils/geo_utils.dart';
+import '../../utils/name_utils.dart';
+import '../../utils/styles_utils.dart';
+import '../bars/appbar.dart';
+import '../bars/bottombar.dart';
+import '../dialogues/init_form_dialogue.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -102,18 +103,19 @@ class HomePageState extends State<HomePage> {
           ),
         ),
       ),
-      if (this.showDialog)
-        Positioned(
-            child: DialogueSequence(
-                name ?? '', counterNum ?? '', street ?? '', postal ?? '', () {
-          closeDialog();
-        }))
+      showDialog
+          ? Positioned(
+              child: DialogueSequence(
+                  name ?? '', counterNum ?? '', street ?? '', postal ?? '', () {
+              closeDialog();
+            }))
+          : Container()
     ]);
   }
 
-  Container? createReadingsList() {
+  Container createReadingsList() {
     final listChildren = <Text>[];
-    if (allReadings == null) return null;
+    if (allReadings == null) return Container();
     for (final reading in allReadings!) {
       final counterState = reading.counterState;
       final date = formatDate(reading.date);

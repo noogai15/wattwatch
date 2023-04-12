@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'camera.dart';
+import '../screens/camera.dart';
 
 class BottomBar extends StatelessWidget {
   const BottomBar({super.key});
