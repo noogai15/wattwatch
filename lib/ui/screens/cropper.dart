@@ -9,6 +9,7 @@ import 'package:image/image.dart' as imgLib;
 import 'package:path_provider/path_provider.dart';
 
 import '../../utils/counter_utils.dart';
+import '../../utils/image_utils.dart';
 import '../../utils/styles_utils.dart';
 import '../dialogues/send_form_dialogue.dart';
 
@@ -127,7 +128,7 @@ class _CropperScreenState extends State<CropperScreen> {
   }
 
   Uint8List preprocessImg(imgLib.Image image, double lumTreshold) {
-    // image = ImageUtils.upscaleImage(image, 2);
+    image = ImageUtils.upscaleImage(image, 2);
     image = imgLib.luminanceThreshold(threshold: lumTreshold, image);
     image = imgLib.invert(image);
     image = imgLib.gaussianBlur(image, radius: 1);
@@ -139,7 +140,7 @@ class _CropperScreenState extends State<CropperScreen> {
   }
 
   Future<String> ocrScan(Uint8List imageBytes) async {
-    var tempImgPath = await prepareImage(
+    var tempImgPath = await prepareImg(
       imageBytes,
       0.3,
     );
@@ -148,7 +149,6 @@ class _CropperScreenState extends State<CropperScreen> {
       'psm': '6',
       'preserve_interword_spaces': '0',
       'oem': '1',
-      'tessedit_write_images': 'true'
     };
 
     var ocrResult = await FlutterTesseractOcr.extractText(tempImgPath,
@@ -158,7 +158,7 @@ class _CropperScreenState extends State<CropperScreen> {
     //(up to 0.5 cap) if no acceptable result was found
     if (needsRetry(ocrResult)) {
       for (var lum = 0.2; lum <= 0.5; lum += 0.05) {
-        tempImgPath = await prepareImage(imageBytes, lum);
+        tempImgPath = await prepareImg(imageBytes, lum);
         ocrResult = await FlutterTesseractOcr.extractText(tempImgPath,
             args: args, language: 'digits');
         if (!needsRetry(ocrResult)) break;
@@ -171,7 +171,7 @@ class _CropperScreenState extends State<CropperScreen> {
     return ocrResult;
   }
 
-  Future<String> prepareImage(Uint8List imageBytes, double lumTreshhold) async {
+  Future<String> prepareImg(Uint8List imageBytes, double lumTreshhold) async {
     final tempImage = imgLib.decodeImage(imageBytes)!;
     final processedImgBytes = preprocessImg(tempImage, lumTreshhold);
 
