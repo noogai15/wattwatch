@@ -61,8 +61,8 @@ bool isValidStreetAddress(String address) {
   return addressRegex.hasMatch(address);
 }
 
-bool isValidPostalCode(String postalCode) {
-  if (postalCode.isEmpty) return false;
-  final postalCodeRegex = RegExp(r'^[1-9]\d{4}$');
-  return postalCodeRegex.hasMatch(postalCode);
+bool isValidPCode(String pCode) {
+  if (pCode.isEmpty) return false;
+  final pCodeRegex = RegExp(r'^[1-9]\d{4}$');
+  return pCodeRegex.hasMatch(pCode);
 }

@@ -174,7 +174,6 @@ class _CropperScreenState extends State<CropperScreen> {
   Future<String> prepareImg(Uint8List imageBytes, double lumTreshhold) async {
     final tempImage = imgLib.decodeImage(imageBytes)!;
     final processedImgBytes = preprocessImg(tempImage, lumTreshhold);
-
     final tempImgPath = await saveToTempDir(await processedImgBytes, 'tempImg');
     return tempImgPath;
   }
@@ -184,10 +183,8 @@ class _CropperScreenState extends State<CropperScreen> {
     final tempImgDir = Directory('${tempDir.path}/images');
     if (!await tempImgDir.exists()) await tempImgDir.create(recursive: true);
     final tempImgPath = '${tempImgDir.path}/${name}.png';
-
     final tempFile = File(tempImgPath);
     await tempFile.writeAsBytes(imageBytes);
-
     return tempFile.path;
   }
 
